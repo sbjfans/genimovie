@@ -2,13 +2,99 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>영화 추천 시스템</title>    
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}">
+    <title>영화 추천 시스템</title>
+    <style>
+        
+        /* Basic styles for the menu */
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        nav ul li {
+            position: relative;
+            display: inline-block;
+            margin-right: 20px;
+        }
+        nav ul li ul {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            list-style: none;
+            padding: 0;
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            min-width: 200px; /* Set a minimum width for dropdown */
+        }
+        nav ul li:hover ul {
+            display: block;
+        }
+        nav ul li ul li {
+            display: block;
+            white-space: nowrap; /* Prevent text wrapping */
+        }
+        nav a {
+            text-decoration: none;
+            padding: 10px;
+            display: block;
+            color: #333;
+        }
+        nav a:hover {
+            background: #ddd;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        /* 입력 박스 길이 조정 스타일 */
+        .input-field {
+            width: 10%; /* 부모 요소의 너비에 맞게 설정 */
+    }
+        .button {
+            background-color: #fff;
+            color: #333;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .button:hover {
+            background-color: #ddd;
+        }
+        .login-button {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+        }
+        .logout-button {
+            position: absolute;
+            right: 100px; /* Adjusted to ensure no overlap with login button */
+            top: 10px;
+        }
+        .register-button {
+            position: absolute;
+            right: 60px; /* Adjusted to ensure no overlap with login and logout buttons */
+            top: 10px;
+        }
+    </style>
 </head>
 <body>
     <header>
         <h1>영화 추천 시스템</h1>
+        {% if session.get('user_id') %}
+            <a href="{{ url_for('logout') }}" class="button logout-button">로그아웃</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="button login-button">로그인</a>
+            <a href="{{ url_for('register') }}" class="button register-button">회원가입</a>
+        {% endif %}
     </header>
     <nav>
         <ul>
@@ -31,9 +117,6 @@
 
             <!-- 인플루언서 관리 메뉴 항목 -->
             <li><a href="{{url_for('menu.influencer_list')}}">인플루언서 관리</a></li>
-
-            <!-- 로그인 메뉴 항목 -->
-            <li><a href="{{url_for('menu.login')}}">로그인</a></li>
 
             <!-- 마이페이지 메뉴 항목 -->
             <li>
