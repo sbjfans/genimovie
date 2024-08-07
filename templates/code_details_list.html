@@ -1,0 +1,26 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h2>Code Details</h2>
+<form method="POST" action="">
+    <label for="code_name">Code Name:</label><br>
+    <input type="text" id="code_name" name="code_name"><br>
+    <label for="code_value">Code Value:</label><br>
+    <input type="text" id="code_value" name="code_value"><br>
+    <label for="category_id">Category ID:</label><br>
+    <input type="number" id="category_id" name="category_id"><br><br>
+    <input type="submit" value="Add Code Detail">
+</form>
+
+<h3>Code Detail List</h3>
+<ul>
+    {% for detail in details %}
+    <li>
+        <strong>{{ detail.code_name }}</strong> ({{ detail.code_value }}) - Category ID: {{ detail.category_id }}
+        <form method="POST" action="{{ url_for('delete_code_detail', id=detail.code_id) }}" style="display:inline;">
+            <button type="submit">Delete</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

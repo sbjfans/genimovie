@@ -1,0 +1,24 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h2>Influencers</h2>
+<form method="POST" action="">
+    <label for="name">Name:</label><br>
+    <input type="text" id="name" name="name"><br>
+    <label for="bio">Bio:</label><br>
+    <textarea id="bio" name="bio"></textarea><br><br>
+    <input type="submit" value="Add Influencer">
+</form>
+
+<h3>Influencer List</h3>
+<ul>
+    {% for influencer in influencers %}
+    <li>
+        <strong>{{ influencer.name }}</strong> - {{ influencer.bio }}
+        <form method="POST" action="{{ url_for('delete_influencer', id=influencer.influencer_id) }}" style="display:inline;">
+            <button type="submit">Delete</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

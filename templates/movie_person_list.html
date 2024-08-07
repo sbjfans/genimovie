@@ -1,0 +1,26 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h2>User Movie Info List</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>User ID</th>
+            <th>Movie ID</th>
+            <th>Rating</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for info in user_movie_info %}
+        <tr>
+            <td>{{ info.id }}</td>
+            <td>{{ info.user_id }}</td>
+            <td>{{ info.movie_id }}</td>
+            <td>{{ info.rating }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

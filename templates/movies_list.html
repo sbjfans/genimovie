@@ -1,0 +1,28 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h2>Movies</h2>
+<form method="POST" action="">
+    <label for="title">Title:</label><br>
+    <input type="text" id="title" name="title"><br>
+    <label for="genre">Genre:</label><br>
+    <input type="text" id="genre" name="genre"><br>
+    <label for="description">Description:</label><br>
+    <textarea id="description" name="description"></textarea><br>
+    <label for="release_date">Release Date:</label><br>
+    <input type="text" id="release_date" name="release_date"><br><br>
+    <input type="submit" value="Add Movie">
+</form>
+
+<h3>Movie List</h3>
+<ul>
+    {% for movie in movies %}
+    <li>
+        <strong>{{ movie.title }}</strong> ({{ movie.genre }}) - {{ movie.release_date }}
+        <form method="POST" action="{{ url_for('delete_movie', id=movie.movie_id) }}" style="display:inline;">
+            <button type="submit">Delete</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

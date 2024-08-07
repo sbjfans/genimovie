@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>영화 추천 시스템</title>
+    <style>
+        /* Basic styles for the menu */
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        nav ul li {
+            position: relative;
+            display: inline-block;
+            margin-right: 20px;
+        }
+        nav ul li ul {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            list-style: none;
+            padding: 0;
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            min-width: 200px; /* Set a minimum width for dropdown */
+        }
+        nav ul li:hover ul {
+            display: block;
+        }
+        nav ul li ul li {
+            display: block;
+            white-space: nowrap; /* Prevent text wrapping */
+        }
+        nav a {
+            text-decoration: none;
+            padding: 10px;
+            display: block;
+            color: #333;
+        }
+        nav a:hover {
+            background: #ddd;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>영화 추천 시스템</h1>
+    </header>
+    <nav>
+        <ul>
+            <!-- 영화 관리 메뉴 항목 -->
+            <li>
+                영화 관리
+                <ul>
+                    <li><a href="{{ url_for('menu.movies_list')}}">영화 관리</a></li>
+                    <li><a href="{{ url_for('menu.movie_review_list')}}">영화 리뷰 관리</a></li>
+                    <li><a href="{{ url_for('menu.movie_recommendations_list')}}">영화 추천 목록</a></li>
+                    <li><a href="{{ url_for('menu.user_movie_info_list')}}">사용자 영화 정보</a></li>
+                </ul>
+            </li>
+
+            <!-- 영화인 관리 메뉴 항목 -->
+            <li><a href="{{url_for('menu.movie_person_list')}}">영화인 관리</a></li>
+
+            <!-- 이벤트 관리 메뉴 항목 -->
+            <li><a href="{{url_for('menu.event_list')}}">이벤트 관리</a></li>
+
+            <!-- 인플루언서 관리 메뉴 항목 -->
+            <li><a href="{{url_for('menu.influencer_list')}}">인플루언서 관리</a></li>
+
+            <!-- 로그인 메뉴 항목 -->
+            <li><a href="{{url_for('menu.login')}}">로그인</a></li>
+
+            <!-- 마이페이지 메뉴 항목 -->
+            <li>
+                마이페이지
+                <ul>
+                    <li><a href="{{url_for('menu.user_reviews')}}">사용자 리뷰</a></li>
+                    <li><a href="{{url_for('menu.social_links')}}">소셜 링크</a></li>
+                    <li><a href="{{url_for('menu.custom_recommendations')}}">타인 맞춤 추천</a></li>
+                    <li><a href="{{url_for('menu.points_management')}}">포인트 관리</a></li>
+                </ul>
+            </li>
+
+            <!-- 알림 관리 메뉴 항목 -->
+            <li><a href="{{url_for('menu.notification_list')}}">알림 관리</a></li>
+
+            <!-- 시스템 관리 메뉴 항목 -->
+            <li>
+                시스템 관리
+                <ul>
+                    <li><a href="{{url_for('menu.code_categories_list')}}">코드분류관리</a></li>
+                    <li><a href="{{url_for('menu.code_details_list')}}">코드상세관리</a></li>
+                    <li><a href="{{url_for('menu.menus_list') }}">메뉴 관리</a></li>
+                    <li><a href="{{ url_for('menu.users_list') }}">사용자 관리</a></li>
+                    <li><a href="{{ url_for('menu.social_network_list')}}">소셜 네트워크 관리</a></li>
+                    <li><a href="{{ url_for('menu.login_log_list') }}">로그인 로그 조회</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h2>Movie Reviews List</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Movie ID</th>
+            <th>Review</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for review in reviews %}
+        <tr>
+            <td>{{ review.id }}</td>
+            <td>{{ review.movie_id }}</td>
+            <td>{{ review.review }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h2>Code Categories</h2>
+
+<form method="POST" action="">    
+    <label for="category_name">Category Name:</label><br>
+    <input type="text" id="category_name" name="category_name"><br>
+    <label for="description">Description:</label><br>
+    <textarea id="description" name="description"></textarea><br><br>
+    <input type="submit" value="Add Code Category">
+</form>
+
+<h3>Category List</h3>
+<ul>
+    {% for category in categories %}
+    <li>
+        <strong>{{ category.category_name }}</strong> - {{ category.description }}
+        <form method="POST" action="{{url_for('delete_code_category', id=category.category_id)}}" style="display:inline;">
+            <button type="submit">Delete</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

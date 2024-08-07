@@ -1,0 +1,23 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h2>Movie Recommendations List</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Movie ID</th>
+            <th>Recommendation</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for recommendation in recommendations %}
+        <tr>
+            <td>{{ recommendation.id }}</td>
+            <td>{{ recommendation.movie_id }}</td>
+            <td>{{ recommendation.recommendation }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
