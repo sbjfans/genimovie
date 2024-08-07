@@ -149,6 +149,21 @@ def logs():
     return render_template('logs.html', logs=log_entries)
 
 
+@app.route('/code_categories', methods=['GET', 'POST'])
+def code_categories():
+    if request.method == 'POST':
+        category_name = request.form['category_name']
+        description = request.form['description']
+        
+        new_category = CodeCategory(category_name=category_name, description=description)
+        db.session.add(new_category)
+        db.session.commit()
+        
+        return redirect(url_for('code_categories'))
+
+    categories = CodeCategory.query.all()
+    return render_template('code_categories_list.html', categories=categories)
+
 def create_app():
     app.register_blueprint(menu, url_prefix='/menu')  # 블루프린트 등록
     return app

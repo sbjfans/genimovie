@@ -3,7 +3,8 @@
 {% block content %}
 <h2>Code Categories</h2>
 
-<form method="POST" action="">    
+<!-- Form to Add a New Code Category -->
+<form method="POST" action="{{ url_for('code_categories') }}">
     <label for="category_name">Category Name:</label><br>
     <input type="text" id="category_name" name="category_name"><br>
     <label for="description">Description:</label><br>
@@ -11,14 +12,17 @@
     <input type="submit" value="Add Code Category">
 </form>
 
+<!-- Button to View/Reload the Code Categories List -->
+<form method="GET" action="{{ url_for('code_categories') }}">
+    <input type="submit" value="조회">
+</form>
+
 <h3>Category List</h3>
 <ul>
     {% for category in categories %}
     <li>
         <strong>{{ category.category_name }}</strong> - {{ category.description }}
-        <form method="POST" action="{{url_for('delete_code_category', id=category.category_id)}}" style="display:inline;">
-            <button type="submit">Delete</button>
-        </form>
+        
     </li>
     {% endfor %}
 </ul>
