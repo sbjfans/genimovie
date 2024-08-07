@@ -1,0 +1,25 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h2>로그 기록</h2>
+<table>
+    <thead>
+        <tr>
+            <th>로그 ID</th>
+            <th>사용자 ID</th>
+            <th>액션</th>
+            <th>타임스탬프</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.log_id }}</td>
+            <td>{{ log.user_id }}</td>
+            <td>{{ log.action }}</td>
+            <td>{{ log.timestamp }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

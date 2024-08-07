@@ -1,0 +1,27 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h2>로그인</h2>
+<form method="POST" action="{{ url_for('login') }}">
+    <div>
+        <label for="username">사용자 이름:</label>
+        <input type="text" id="username" name="username" maxlength="50" required>
+    </div>
+    <div>
+        <label for="password">비밀번호:</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+    <div>
+        <button type="submit">로그인</button>
+    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash">
+                {% for category, message in messages %}
+                    <div class="{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+</form>
+{% endblock %}
