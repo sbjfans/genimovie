@@ -5,90 +5,180 @@
     <title>영화 추천 시스템</title>
     <style>
         
-        /* Basic styles for the menu */
-        nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        nav ul li {
-            position: relative;
-            display: inline-block;
-            margin-right: 20px;
-        }
-        nav ul li ul {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            list-style: none;
-            padding: 0;
-            background: #f4f4f4;
-            border: 1px solid #ddd;
-            min-width: 200px; /* Set a minimum width for dropdown */
-        }
-        nav ul li:hover ul {
-            display: block;
-        }
-        nav ul li ul li {
-            display: block;
-            white-space: nowrap; /* Prevent text wrapping */
-        }
-        nav a {
-            text-decoration: none;
-            padding: 10px;
-            display: block;
-            color: #333;
-        }
-        nav a:hover {
-            background: #ddd;
-        }
-        header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px 20px;
-            text-align: center;
-            position: relative;
-        }
-
-        /* 입력 박스 길이 조정 스타일 */
-        .input-field {
-            width: 10%; /* 부모 요소의 너비에 맞게 설정 */
+    /* Basic styles for the menu */
+    nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
     }
-        .button {
-            background-color: #fff;
-            color: #333;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            text-decoration: none;
-            margin: 0 10px;
-        }
-        .button:hover {
-            background-color: #ddd;
-        }
-        .login-button {
-            position: absolute;
-            right: 20px;
-            top: 10px;
-        }
-        .logout-button {
-            position: absolute;
-            right: 100px; /* Adjusted to ensure no overlap with login button */
-            top: 10px;
-        }
-        .register-button {
-            position: absolute;
-            right: 60px; /* Adjusted to ensure no overlap with login and logout buttons */
-            top: 10px;
-        }
-    </style>
+
+    nav ul li {
+        position: relative;
+        display: inline-block;
+        margin-right: 20px;
+    }
+
+    nav ul li ul {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        list-style: none;
+        padding: 0;
+        background: #f4f4f4;
+        border: 1px solid #ddd;
+        min-width: 200px; /* Set a minimum width for dropdown */
+    }
+
+    nav ul li:hover ul {
+        display: block;
+    }
+
+    nav ul li ul li {
+        display: block;
+        white-space: nowrap; /* Prevent text wrapping */
+    }
+
+    nav a {
+        text-decoration: none;
+        padding: 10px;
+        display: block;
+        color: #333;
+    }
+
+    nav a:hover {
+        background: #ddd;
+    }
+
+    header {
+        background-color: #333;
+        color: #fff;
+        padding: 10px 20px;
+        text-align: center;
+        position: relative;
+    }
+
+    .input-field {
+        width: 10%; /* Parent width adjustment */
+    }
+
+    .button {
+        background-color: #fff;
+        color: #333;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        text-decoration: none;
+        margin: 0 10px;
+        display: inline-block;
+        position: relative;
+    }
+
+    .button:hover {
+        background-color: #ddd;
+    }
+
+    .login-button {
+        position: absolute;
+        right: 20px;
+        top: 10px;
+    }
+
+    .logout-button {
+        position: absolute;
+        right: 120px; /* Adjusted to ensure no overlap with login button */
+        top: 10px;
+    }
+
+    .register-button {
+        position: absolute;
+        right: 70px; /* Adjusted to ensure no overlap with login and logout buttons */
+        top: 10px;
+    }
+
+
+    main {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px; /* 좌우 간격 조절 */
+        padding: 20px;
+    }
+
+    .right-section {
+        flex: 1;
+        min-width: 300px; /* 최소 너비 설정 */
+        max-width: 400px; /* 최대 너비 설정 */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
+        padding: 15px; /* 내부 여백 */
+        border-radius: 8px; /* 둥근 모서리 */
+        background-color: #fff; /* 배경 색상 */
+        margin-bottom: 20px; /* 상하 간격 조절 */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .recommendations {
+        margin-bottom: 20px;
+    }
+
+    .recommendations h2 {
+        font-size: 1.5em;
+        margin-bottom: 10px;
+    }
+
+    .recommendation-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .recommendation-item, .review-item, .event-item {
+        width: 48%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .recommendation-item button, .review-item button, .event-item button {
+        margin-top: 10px;
+        background-color: #2196f3;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .recommendation-item button:hover, .review-item button:hover, .event-item button:hover {
+        background-color: #1976d2;
+    }
+
+    /* 고정 높이 설정 */
+    .review-item, .event-item {
+        height: 120px; /* 필요에 따라 조정 */
+    }
+
+    .recommendation-item {
+        height: 120px; /* 필요에 따라 조정 */
+    }
+
+    button {
+        margin-top: 10px;
+    }
+
+
+</style>
 </head>
 <body>
     <header>
-        <h1>영화 추천 시스템</h1>
+        <h1>GENI 영화 추천 시스템</h1>
         {% if session.get('user_id') %}
             <a href="{{ url_for('logout') }}" class="button logout-button">로그아웃</a>
         {% else %}
@@ -147,7 +237,151 @@
         </ul>
     </nav>
     <main>
-        {% block content %}{% endblock %}
+        <section class="right-section">
+            <div class="recommendations">
+                <h2>추천 영화</h2>
+                <div class="recommendation-row">
+                    <div class="recommendation-item">
+                        <h3>AI 추천영화</h3>
+                        <button>더보기</button>
+                    </div>
+                    <div class="recommendation-item">
+                        <h3>사용자 추천영화</h3>
+                        <button>더보기</button>
+                    </div>
+                </div>
+                <div class="recommendation-row">
+                    <div class="recommendation-item">
+                        <h3>인플루언서 추천영화</h3>
+                        <button>더보기</button>
+                    </div>
+                    <div class="recommendation-item">
+                        <h3>사이트 추천영화</h3>
+                        <button>더보기</button>
+                    </div>                    
+                </div>
+            </div>
+        </section>
+    
+        <section class="right-section">
+            <div class="recommendations">
+                <h2>영화 리뷰</h2>
+                <div class="review-item">
+                    <h3>리뷰 제목 1</h3>
+                    <button>더보기</button>
+                </div>
+                
+            </div>
+        </section>
+    
+        <section class="right-section">
+            <div class="recommendations">
+                <h2>진행 중인 이벤트</h2>
+                <div class="event-item">
+                    <h3>이벤트 제목 1</h3>
+                    <button>더보기</button>
+                </div>
+               
+            </div>
+        </section>
+    
+       
+
+        <section class="right-section">
+            <div class="recommendations">
+                <h2>영화인 정보</h2>
+                <div class="recommendation-row">
+                    <div class="recommendation-item">
+                        <h3>영화감독/배우</h3>
+                        <button>더보기</button>
+                    </div>                                
+                </div>
+            </div>
+        </section>
+    
+      
+    
+        <section class="right-section">
+            <div class="recommendations">
+                <h2>자유 게시판</h2>
+                <div class="event-item">
+                    <h3>게시판 1</h3>
+                    <button>더보기</button>
+                </div>               
+            </div>
+        </section>
+    
+        <section class="right-section"> 
+            <div class="recommendations">
+                <h2>무료영화상영</h2>                
+                <div class="recommendation-row">
+                    <div class="recommendation-item">
+                        <h3>멜로영화</h3>
+                        <button>더보기</button>
+                    </div>                    
+            </div>
+        </section>
+        <section class="right-section"> 
+            <div class="recommendations">
+                <h2>소셜네트워크</h2>                
+                <div class="recommendation-row">
+                    <div class="recommendation-item">
+                        <h3>멜로영화</h3>
+                        <button>더보기</button>
+                    </div>
+                    <div class="recommendation-item">
+                        <h3>SF영화</h3>
+                        <button>더보기</button>
+                    </div>
+                </div>
+                <div class="recommendation-row">
+                    <div class="recommendation-item">
+                        <h3>코믹영화</h3>
+                        <button>더보기</button>
+                    </div>
+                    <div class="recommendation-item">
+                        <h3>공포영화</h3>
+                        <button>더보기</button>
+                    </div>                    
+                </div>
+            </div>
+        </section>
+        <section class="right-section">
+            <div class="recommendations">
+                <h2>최신 영화뉴스</h2>
+                <div class="event-item">
+                    <h3>뉴스 1</h3>
+                    <button>더보기</button>
+                </div>
+               
+            </div>
+        </section>
+    
+        <section class="right-section"> 
+            <div class="recommendations">
+                <h2>추천 영화 상영정보</h2>
+                <div class="recommendation-row">
+                    <div class="recommendation-item">
+                        <h3>CGV</h3>
+                        <button>더보기</button>
+                    </div>
+                    <div class="recommendation-item">
+                        <h3>롯데시네마</h3>
+                        <button>더보기</button>
+                    </div>
+                </div>
+                <div class="recommendation-row">
+                    <div class="recommendation-item">
+                        <h3>Netflix</h3>
+                        <button>더보기</button>
+                    </div>
+                    <div class="recommendation-item">
+                        <h3>기타 상영관</h3>
+                        <button>더보기</button>
+                    </div>                    
+                </div>
+            </div>
+        </section>
     </main>
 </body>
 </html>
