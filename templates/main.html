@@ -2,53 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>영화 추천 시스템</title>
-    <style>
-        /* Basic styles for the menu */
-        nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        nav ul li {
-            position: relative;
-            display: inline-block;
-            margin-right: 20px;
-        }
-        nav ul li ul {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            list-style: none;
-            padding: 0;
-            background: #f4f4f4;
-            border: 1px solid #ddd;
-            min-width: 200px; /* Set a minimum width for dropdown */
-        }
-        nav ul li:hover ul {
-            display: block;
-        }
-        nav ul li ul li {
-            display: block;
-            white-space: nowrap; /* Prevent text wrapping */
-        }
-        nav a {
-            text-decoration: none;
-            padding: 10px;
-            display: block;
-            color: #333;
-        }
-        nav a:hover {
-            background: #ddd;
-        }
-        header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px 20px;
-            text-align: center;
-        }
-    </style>
+    <title>영화 추천 시스템</title>    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}">
 </head>
 <body>
     <header>
