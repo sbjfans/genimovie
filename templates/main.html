@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>영화 추천 시스템</title>
+    <title>{% block title %}영화 추천 시스템{% endblock %}</title>
     <style>
         
     /* Basic styles for the menu */
@@ -236,6 +236,8 @@
             </li>
         </ul>
     </nav>
+        {% block content %}
+        {% endblock %}
     <main>
         <section class="right-section">
             <div class="recommendations">
@@ -382,6 +384,9 @@
                 </div>
             </div>
         </section>
+    </nav>
+    <main>
+     
     </main>
 </body>
 </html>

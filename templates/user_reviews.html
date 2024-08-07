@@ -1,0 +1,23 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h2>사용자 리뷰</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Review Title</th>
+            <th>Review Content</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for review in reviews %}
+        <tr>
+            <td>{{ review.id }}</td>
+            <td>{{ review.title }}</td>
+            <td>{{ review.content }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

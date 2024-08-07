@@ -1,0 +1,23 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h2>타인 맞춤 추천</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>User ID</th>
+            <th>Recommendation</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for recommendation in recommendations %}
+        <tr>
+            <td>{{ recommendation.id }}</td>
+            <td>{{ recommendation.user_id }}</td>
+            <td>{{ recommendation.recommendation }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

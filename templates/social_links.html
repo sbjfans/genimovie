@@ -1,0 +1,23 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h2>소셜 링크</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Platform</th>
+            <th>Link</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for link in social_links %}
+        <tr>
+            <td>{{ link.id }}</td>
+            <td>{{ link.platform }}</td>
+            <td><a href="{{ link.url }}">{{ link.url }}</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
