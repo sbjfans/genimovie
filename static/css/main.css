@@ -44,3 +44,47 @@ header {
     padding: 10px 20px;
     text-align: center;
 }
+
+
+
+/* Section Styles */
+.right-section {
+    background-color: #000; /* Black background for sections */
+    color: #fff; /* White text color for contrast */
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.recommendations h2, .recommendations h3 {
+    color: #fff; /* White text for headings */
+}
+
+.recommendation-item, .review-item, .event-item {
+    background: #111; /* Slightly lighter black for items */
+    color: #fff; /* White text color */
+    padding: 10px;
+    border: 1px solid #333;
+    border-radius: 5px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.recommendation-item button, .review-item button, .event-item button {
+    background-color: #2196f3; /* Blue button */
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.recommendation-item button:hover, .review-item button:hover, .event-item button:hover {
+    background-color: #1976d2;
+}
+
+.recommendation-row {
+    display: flex;
+    gap: 20px; /* Space between items */
+}
