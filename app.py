@@ -153,8 +153,8 @@ def logs():
     return render_template('logs.html', logs=log_entries)
 
 
-@app.route('/code_categories', methods=['GET', 'POST'])
-def code_categories():
+@app.route('/create_code_categories', methods=['GET', 'POST'])
+def create_code_categories():
     if request.method == 'POST':
         category_name = request.form['category_name']
         description = request.form['description']
@@ -163,9 +163,45 @@ def code_categories():
         db.session.add(new_category)
         db.session.commit()
         
-        return redirect(url_for('code_categories'))
+        return redirect(url_for('search_code_categories'))
 
     categories = CodeCategory.query.all()
+    return render_template('code_categories_list.html', categories=categories)
+
+@app.route('/search_code_categories', methods=['GET', 'POST'])
+def search_code_categories():
+    # Initialize filter variables
+    category_name = None
+    description = None
+    is_active = None
+
+    # Check if the request method is POST
+    if request.method == 'POST':
+        category_id = request.form.get('search_category_id', '')
+        category_name = request.form.get('search_category_name', '')
+        description = request.form.get('search_description', '')
+        is_active = request.form.get('is_active', None)
+
+    # Build query with filters
+    query = CodeCategory.query
+    
+    if category_id:
+        query = query.filter(CodeCategory.category_id.ilike(f'%{category_id}%'))
+
+    if category_name:
+        query = query.filter(CodeCategory.category_name.ilike(f'%{category_name}%'))
+    
+    if description:
+        query = query.filter(CodeCategory.description.ilike(f'%{description}%'))
+    
+    if is_active is not None:
+        # Convert is_active to boolean for comparison
+        is_active = bool(is_active)
+        query = query.filter(CodeCategory.is_active == is_active)
+
+    # Execute query and get results
+    categories = query.all()
+    
     return render_template('code_categories_list.html', categories=categories)
 
 def create_app():
