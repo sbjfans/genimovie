@@ -6,10 +6,10 @@
 <!-- Form to Add a New Code Category -->
 <form method="POST" action="{{ url_for('create_code_categories') }}" class="code-category-form">
     <label for="category_name">분류코드명</label>
-    <input type="text" id="category_name" name="category_name" placeholder="분류코드명을 입력하세요">
+    <input type="text" id="category_name" name="category_name" >
     
     <label for="description">설명</label>
-    <input type="text" id="description" name="description" placeholder="설명을 입력하세요">
+    <input type="text" id="description" name="description" >
     
     <label for="is_active">사용여부</label>
     <input type="checkbox" id="is_active" name="is_active">
@@ -181,7 +181,7 @@
 {% block scripts %}
 <script>
     function resetForm() {       
-        
+
         // Reset the form fields
         document.getElementById('searchForm').reset();
     }
