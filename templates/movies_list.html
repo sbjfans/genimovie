@@ -14,15 +14,246 @@
     <input type="submit" value="Add Movie">
 </form>
 
-<h3>Movie List</h3>
-<ul>
-    {% for movie in movies %}
-    <li>
-        <strong>{{ movie.title }}</strong> ({{ movie.genre }}) - {{ movie.release_date }}
-        <form method="POST" action="{{ url_for('delete_movie', id=movie.movie_id) }}" style="display:inline;">
-            <button type="submit">Delete</button>
+<!-- Container for the view button and categories list -->
+<div class="list-container">
+    <h3>영화 목록</h3>
+    <!-- Form to View/Reload the Movie List -->
+    <div class="view-button-container">
+        <form id='searchForm' method="POST" action="{{ url_for('search_movies') }}" class="view-button-form">
+            <label for="search_movie_id">영화 ID</label>
+            <input type="text" id="search_movie_id" name="search_movie_id" value="{{ search_movie_id }}">
+            
+            <label for="search_title">제목</label>
+            <input type="text" id="search_title" name="search_title" value="{{ search_title }}">
+            
+            <label for="search_director_name">감독</label>
+            <input type="text" id="search_director_name" name="search_director_name" value="{{ search_director_name }}">
+            
+            <!-- Initializing button -->
+            <input type="button" value="초기화" id="init-button" onclick="document.getElementById('searchForm').reset();">
+            <input type="submit" value="조회" id="view-button">
         </form>
-    </li>
-    {% endfor %}
-</ul>
+    </div>
+    
+    <table id="movieTable" width="70%">
+        <thead style="background-color: #f8e3cd; color: #333;">
+            <tr>
+                <th data-sort="movie_id" style="padding: 8px; text-align: center;">영화 ID</th>
+                <th data-sort="title" style="padding: 8px; text-align: center;">제목</th>
+                <th data-sort="director_name">감독</th>
+                <th data-sort="average_rating">평점</th>
+                <th data-sort="genre" style="padding: 8px; text-align: center;">장르</th>
+                <th data-sort="release_date" style="padding: 8px; text-align: center;">날짜</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if movies|length == 0 %}
+            <!-- No results row -->
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 20px;">조회된 결과가 없습니다</td>
+            </tr>
+            {% else %}
+            {% for movie in movies %}
+            <tr>
+                <td style="padding: 8px; text-align: right;">{{ movie.movie_id }}</td>
+                <td style="padding: 8px; text-align: center;">{{ movie.title }}</td>
+                <td>{{ movie.director_name }}</td>
+                <td>{{ movie.average_rating }}</td>
+                <td>{{ movie.genre }}</td>
+                <td>{{ movie.release_date }}</td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+
+            <!-- Fill empty rows to ensure 15 rows in the table -->
+            {% for i in range(15 - movies|length) %}
+            <tr>
+                <td style="padding: 8px; text-align: center;">&nbsp;</td>
+                <td style="padding: 8px;">&nbsp;</td>
+                <td style="padding: 8px;">&nbsp;</td>
+                <td style="padding: 8px;">&nbsp;</td>
+                <td style="padding: 8px;">&nbsp;</td>
+                <td style="padding: 8px; text-align: center;">&nbsp;</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* 스타일 정의 */
+    .code-category-form {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        max-width: 600px;
+        margin: 20px auto;
+    }
+
+    .code-category-form label {
+        display: block;
+        margin: 10px 0 5px;
+        font-weight: bold;
+    }
+
+    .code-category-form input[type="text"],
+    .code-category-form textarea {
+        width: calc(100% - 16px);
+        padding: 8px;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .code-category-form textarea {
+        height: 120px;
+    }
+
+    .code-category-form input[type="checkbox"] {
+        margin-right: 10px;
+    }
+
+    .code-category-form input[type="submit"] {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .code-category-form input[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+
+    /* Style the container for the list and view button */
+    .list-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+
+    .view-button-container {
+        text-align: right;
+        margin-bottom: 20px;
+    }
+
+    .view-button-form input[type="submit"] {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .view-button-form input[type="submit"]:hover {
+        background-color: #218838;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    table, th, td {
+        border: 1px solid #ddd;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #ffcc99; /* Light orange background color for table header */
+        font-weight: bold;
+        color: #333; /* Darker text color for contrast */
+        cursor: pointer;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    /* Style for the "번호" column */
+    th:first-child, td:first-child {
+        width: 80px;
+        text-align: center;
+    }
+
+    /* Responsive design adjustments */
+    @media (max-width: 768px) {
+        .code-category-form, .list-container {
+            padding: 15px;
+        }
+
+        .code-category-form input[type="text"], .code-category-form textarea {
+            width: calc(100% - 14px);
+        }
+
+        table {
+            font-size: 14px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Reset form function
+        function resetForm() {
+            document.getElementById('searchForm').reset();
+        }
+
+        // Assign the reset function to the "초기화" button
+        document.getElementById('init-button').addEventListener('click', function() {
+            resetForm();
+        });
+
+        // Sorting functionality
+        const table = document.getElementById('movieTable');
+        const headers = table.querySelectorAll('th[data-sort]');
+        let sortOrder = {};
+
+        headers.forEach(header => {
+            header.addEventListener('click', function() {
+                const sortKey = header.dataset.sort;
+                const tbody = table.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                const isAscending = sortOrder[sortKey] = !sortOrder[sortKey];
+
+                rows.sort((a, b) => {
+                    const cellA = a.querySelector(`td:nth-child(${header.cellIndex + 1})`).innerText.trim();
+                    const cellB = b.querySelector(`td:nth-child(${header.cellIndex + 1})`).innerText.trim();
+
+                    // Check if the values are numbers
+                    const valueA = isNaN(cellA) ? cellA : parseFloat(cellA);
+                    const valueB = isNaN(cellB) ? cellB : parseFloat(cellB);
+
+                    if (typeof valueA === 'number' && typeof valueB === 'number') {
+                        return isAscending ? valueA - valueB : valueB - valueA;
+                    } else {
+                        return isAscending ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+                    }
+                });
+
+                // Re-append sorted rows to the tbody
+                rows.forEach(row => tbody.appendChild(row));
+            });
+        });
+    });
+</script>
 {% endblock %}
