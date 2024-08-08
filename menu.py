@@ -56,9 +56,9 @@ def event_list():
     return render_template('event_list.html')
 
 # 인플루언서 관리 관련 라우트
-@menu.route('/influencer_list')
-def influencer_list():
-    return render_template('influencer_list.html')
+@menu.route('/influencers_list')
+def influencers_list():
+    return render_template('influencers_list.html')
 
 # 로그인 라우트
 @menu.route('/login')
