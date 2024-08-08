@@ -67,7 +67,7 @@
                 <td style="padding: 8px; text-align: right;">{{ influencers|length - loop.index + 1 }}</td>                
                 <td>{{ influencer.name }}</td>      
                 <td>{{ influencer.bio }}</td> 
-                <td></td>                           
+                <td><img src="static/images/{{influencer.img_nm}}" alt="Image">{{ influencer.img_nm }}</td>                       
             </tr>
             {% endfor %}
             {% endif %}
