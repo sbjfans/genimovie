@@ -6,10 +6,10 @@
 <!-- Form to Add a New Code Category -->
 <form method="POST" action="{{ url_for('create_code_categories') }}" class="code-category-form">
     <label for="category_name">분류코드명</label>
-    <input type="text" id="category_name" name="category_name" >
+    <input type="text" id="category_name" name="category_name" required>
     
     <label for="description">설명</label>
-    <input type="text" id="description" name="description" >
+    <input type="text" id="description" name="description">
     
     <label for="is_active">사용여부</label>
     <input type="checkbox" id="is_active" name="is_active">
@@ -24,40 +24,63 @@
     <div class="view-button-container">
         <form id='searchForm' method="POST" action="{{ url_for('search_code_categories') }}" class="view-button-form">
             <label for="search_category_id">분류코드</label>
-            <input type="text" id="search_category_id" name="search_category_id">
+            <input type="text" id="search_category_id" name="search_category_id" value="{{ search_category_id }}">
             
             <label for="search_category_name">분류코드명</label>
-            <input type="text" id="search_category_name" name="search_category_name">
+            <input type="text" id="search_category_name" name="search_category_name" value="{{ search_category_name }}">
             
             <label for="search_description">설명</label>
-            <input type="text" id="search_description" name="search_description">
+            <input type="text" id="search_description" name="search_description" value="{{ search_description }}">
             
             <label for="is_active">사용여부</label>
-            <input type="checkbox" id="is_active" name="is_active">
+            <select id="is_active" name="is_active">
+                <option value="" {% if search_is_active == '' %}selected{% endif %}>전체</option>
+                <option value="1" {% if search_is_active == '1' %}selected{% endif %}>사용</option>
+                <option value="0" {% if search_is_active == '0' %}selected{% endif %}>미사용</option>
+            </select>
             
-            <input type="button" value="초기화" id="init-button" onclick="resetForm()">
+            <!-- Initializing button -->
+            <input type="button" value="초기화" id="init-button" onclick="document.getElementById('searchForm').reset();">
             <input type="submit" value="조회" id="view-button">
         </form>
     </div>
     
-    <table width="70%">
+    <table id="categoryTable" width="70%">
         <thead style="background-color: #f8e3cd; color: #333;">
             <tr>
-                <th style="padding: 8px; text-align: center;">번호</th>
-                <th style="padding: 8px; text-align: center;">분류코드</th>
-                <th style="padding: 8px; text-align: center;">분류코드명</th>
-                <th style="padding: 8px; text-align: center;">설명</th>
-                <th style="padding: 8px; text-align: center;">사용여부</th>
+                <th data-sort="number" style="padding: 8px; text-align: center;">번호</th>
+                <th data-sort="category_id" style="padding: 8px; text-align: center;">분류코드</th>
+                <th data-sort="category_name">분류코드명</th>
+                <th data-sort="description">설명</th>
+                <th data-sort="is_active" style="padding: 8px; text-align: center;">사용여부</th>
             </tr>
         </thead>
         <tbody>
+            {% if categories|length == 0 %}
+            <!-- No results row -->
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 20px;">조회된 결과가 없습니다</td>
+            </tr>
+            {% else %}
             {% for category in categories %}
             <tr>
-                <td>{{ categories|length - loop.index + 1 }}</td>
-                <td>{{ category.category_id }}</td>
+                <td style="padding: 8px; text-align: right;">{{ categories|length - loop.index + 1 }}</td>
+                <td style="padding: 8px; text-align: center;">{{ category.category_id }}</td>
                 <td>{{ category.category_name }}</td>
                 <td>{{ category.description }}</td>
-                <td>{{ '사용' if category.is_active else '미사용' }}</td>
+                <td style="padding: 8px; text-align: center;">{{ '사용' if category.is_active else '미사용' }}</td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+
+            <!-- Fill empty rows to ensure 15 rows in the table -->
+            {% for i in range(15 - categories|length) %}
+            <tr>
+                <td style="padding: 8px; text-align: center;">&nbsp;</td>
+                <td style="padding: 8px;">&nbsp;</td>
+                <td style="padding: 8px;">&nbsp;</td>
+                <td style="padding: 8px;">&nbsp;</td>
+                <td style="padding: 8px; text-align: center;">&nbsp;</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -67,7 +90,7 @@
 
 {% block styles %}
 <style>
-    /* Style the form for adding a new code category */
+    /* 스타일 정의 */
     .code-category-form {
         margin-bottom: 30px;
         padding: 20px;
@@ -164,6 +187,7 @@
         background-color: #ffcc99; /* Light orange background color for table header */
         font-weight: bold;
         color: #333; /* Darker text color for contrast */
+        cursor: pointer;
     }
 
     tbody tr:nth-child(even) {
@@ -175,17 +199,68 @@
         width: 80px;
         text-align: center;
     }
+
+    /* Responsive design adjustments */
+    @media (max-width: 768px) {
+        .code-category-form, .list-container {
+            padding: 15px;
+        }
+
+        .code-category-form input[type="text"], .code-category-form textarea {
+            width: calc(100% - 14px);
+        }
+
+        table {
+            font-size: 14px;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    function resetForm() {       
+    document.addEventListener('DOMContentLoaded', function() {
+        // Reset form function
+        function resetForm() {
+            document.getElementById('searchForm').reset();
+        }
 
-        // Reset the form fields
-        document.getElementById('searchForm').reset();
-    }
+        // Assign the reset function to the "초기화" button
+        document.getElementById('init-button').addEventListener('click', function() {
+            resetForm();
+        });
 
-    // Optionally, you can add logic to handle form submission or dynamic content loading here
+        // Sorting functionality
+        const table = document.getElementById('categoryTable');
+        const headers = table.querySelectorAll('th[data-sort]');
+        let sortOrder = {};
+
+        headers.forEach(header => {
+            header.addEventListener('click', function() {
+                const sortKey = header.dataset.sort;
+                const tbody = table.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                const isAscending = sortOrder[sortKey] = !sortOrder[sortKey];
+
+                rows.sort((a, b) => {
+                    const cellA = a.querySelector(`td:nth-child(${header.cellIndex + 1})`).innerText.trim();
+                    const cellB = b.querySelector(`td:nth-child(${header.cellIndex + 1})`).innerText.trim();
+
+                    // Check if the values are numbers
+                    const valueA = isNaN(cellA) ? cellA : parseFloat(cellA);
+                    const valueB = isNaN(cellB) ? cellB : parseFloat(cellB);
+
+                    if (typeof valueA === 'number' && typeof valueB === 'number') {
+                        return isAscending ? valueA - valueB : valueB - valueA;
+                    } else {
+                        return isAscending ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+                    }
+                });
+
+                // Re-append sorted rows to the tbody
+                rows.forEach(row => tbody.appendChild(row));
+            });
+        });
+    });
 </script>
 {% endblock %}

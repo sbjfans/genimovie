@@ -1,26 +1,261 @@
 {% extends 'main.html' %}
 
 {% block content %}
-<h2>Code Details</h2>
-<form method="POST" action="">
-    <label for="code_name">Code Name:</label><br>
-    <input type="text" id="code_name" name="code_name"><br>
-    <label for="code_value">Code Value:</label><br>
-    <input type="text" id="code_value" name="code_value"><br>
-    <label for="category_id">Category ID:</label><br>
-    <input type="number" id="category_id" name="category_id"><br><br>
-    <input type="submit" value="Add Code Detail">
+<h2>코드관리</h2>
+
+<!-- Form to Add a New Code Category -->
+<form method="POST" action="" class="code-category-form">
+    <label for="category_name">분류명</label>    
+    <select id="category_select" name="category_name">
+    </select>
+    
+    <label for="code_value">코드</label>
+    <input type="text" id="code_value" name="code_value">
+    <label for="code_name">코드명</label>
+    <input type="text" id="code_name" name="code_name">
+    <label for="is_active">사용여부</label>
+    <input type="checkbox" id="is_active" name="is_active">
+    <input type="submit" value="저장">    
 </form>
 
-<h3>Code Detail List</h3>
-<ul>
-    {% for detail in details %}
-    <li>
-        <strong>{{ detail.code_name }}</strong> ({{ detail.code_value }}) - Category ID: {{ detail.category_id }}
-        <form method="POST" action="{{ url_for('delete_code_detail', id=detail.code_id) }}" style="display:inline;">
-            <button type="submit">Delete</button>
+<!-- Container for the view button and categories list -->
+<div class="list-container">
+    <h3>코드상세목록</h3>
+    <!-- Form to View/Reload the Code Categories List -->
+    <div class="view-button-container">
+        <form id='searchForm' method="POST" action="{{ url_for('search_code_categories') }}" class="view-button-form">
+           
+            <label for="category_name">분류코드명</label>    
+            <select id="is_active" name="category_name">
+                <option value="" {% if search_is_active == '' %}selected{% endif %}></option>        
+            </select>
+            <label for="search_code_name">상세코드명</label>
+            <input type="text" id="search_code_name" name="search_code_name" value="{{ search_code_name }}">
+            <label for="search_code_value">상세코드</label>
+            <input type="text" id="search_code_value" name="search_code_value" value="{{ search_code_value }}">
+            
+            <label for="is_active">사용여부</label>
+            <select id="is_active" name="is_active">
+                <option value="" {% if search_is_active == '' %}selected{% endif %}>전체</option>
+                <option value="1" {% if search_is_active == '1' %}selected{% endif %}>사용</option>
+                <option value="0" {% if search_is_active == '0' %}selected{% endif %}>미사용</option>
+            </select>
+            
+            <!-- Initializing button -->
+            <input type="button" value="초기화" id="init-button" onclick="document.getElementById('searchForm').reset();">
+            <input type="submit" value="조회" id="view-button">
         </form>
-    </li>
-    {% endfor %}
-</ul>
+    </div>
+    
+    <table id="categoryTable" width="70%">
+        <thead style="background-color: #f8e3cd; color: #333;">
+            <tr>
+                <th data-sort="number" style="padding: 8px; text-align: center;">번호</th>
+                <th data-sort="category_id" style="padding: 8px; text-align: center;">분류코드명</th>
+                <th data-sort="category_name">상세코드</th>
+                <th data-sort="description">상세코드명</th>
+                <th data-sort="is_active" style="padding: 8px; text-align: center;">사용여부</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if categories|length == 0 %}
+            <!-- No results row -->
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 20px;">조회된 결과가 없습니다</td>
+            </tr>
+            {% else %}
+            {% for category in categories %}
+            <tr>
+                <td style="padding: 8px; text-align: right;">{{ categories|length - loop.index + 1 }}</td>
+                <td style="padding: 8px; text-align: center;">{{ category.category_id }}</td>
+                <td>{{ category.category_name }}</td>
+                <td>{{ category.description }}</td>
+                <td style="padding: 8px; text-align: center;">{{ '사용' if category.is_active else '미사용' }}</td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+
+            <!-- Fill empty rows to ensure 15 rows in the table -->
+            {% for i in range(15 - categories|length) %}
+            <tr>
+                <td style="padding: 8px; text-align: center;">&nbsp;</td>
+                <td style="padding: 8px;">&nbsp;</td>
+                <td style="padding: 8px;">&nbsp;</td>
+                <td style="padding: 8px;">&nbsp;</td>
+                <td style="padding: 8px; text-align: center;">&nbsp;</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
+
+{% block styles %}
+<style>
+    /* 스타일 정의 */
+    .code-category-form {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        max-width: 600px;
+        margin: 20px auto;
+    }
+
+    .code-category-form label {
+        display: block;
+        margin: 10px 0 5px;
+        font-weight: bold;
+    }
+
+    .code-category-form input[type="text"],
+    .code-category-form textarea {
+        width: calc(100% - 16px);
+        padding: 8px;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .code-category-form textarea {
+        height: 120px;
+    }
+
+    .code-category-form input[type="checkbox"] {
+        margin-right: 10px;
+    }
+
+    .code-category-form input[type="submit"] {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .code-category-form input[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+
+    /* Style the container for the list and view button */
+    .list-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+
+    .view-button-container {
+        text-align: right;
+        margin-bottom: 20px;
+    }
+
+    .view-button-form input[type="submit"] {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .view-button-form input[type="submit"]:hover {
+        background-color: #218838;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    table, th, td {
+        border: 1px solid #ddd;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #ffcc99; /* Light orange background color for table header */
+        font-weight: bold;
+        color: #333; /* Darker text color for contrast */
+        cursor: pointer;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    /* Style for the "번호" column */
+    th:first-child, td:first-child {
+        width: 80px;
+        text-align: center;
+    }
+
+    /* Responsive design adjustments */
+    @media (max-width: 768px) {
+        .code-category-form, .list-container {
+            padding: 15px;
+        }
+
+        .code-category-form input[type="text"], .code-category-form textarea {
+            width: calc(100% - 14px);
+        }
+
+        table {
+            font-size: 14px;
+        }
+    }
+</style>
+{% endblock %}
+
+
+<script>
+    console.log('Script Loaded'); // Check if this is logged
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('URL for select_categories_list:', '{{ url_for("select_categories_list") }}');
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        alert('DOM fully loaded and parsed'); // Check if this runs
+
+        function populateCategories() {
+            console.log('Fetching Categories'); // Check if this runs
+            fetch('{{ url_for("select_categories_list") }}')
+                .then(response => {
+                    console.log('Response Received:', response); // Check response
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Data Received:', data); // Check received data
+                    const categorySelect = document.getElementById('category_select');
+                    
+                    // Clear existing options
+                    categorySelect.innerHTML = '<option value="">선택</option>';
+                    
+                    // Populate the select element with new options
+                    data.categories.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.category_id;
+                        option.textContent = category.category_name;
+                        categorySelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching categories:', error));
+        }
+        
+        // Call the function to populate categories
+        populateCategories();
+    });
+</script>

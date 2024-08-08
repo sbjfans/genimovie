@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import logging
@@ -264,10 +264,23 @@ def logs():
 @app.route('/create_code_categories', methods=['GET', 'POST'])
 def create_code_categories():
     if request.method == 'POST':
+
+        print('분류코드 저장::')
+
         category_name = request.form['category_name']
         description = request.form['description']
+        is_active = request.form['is_active']
+
+        if is_active=='on':
+            is_active=1
+        else :
+            is_active=0    
+
+        print('category_name::'+category_name)
+        print('description::'+description)
+        print('is_active::'+str(is_active))
         
-        new_category = CodeCategory(category_name=category_name, description=description)
+        new_category = CodeCategory(category_name=category_name, description=description, is_active=is_active)
         db.session.add(new_category)
         db.session.commit()
         
@@ -278,39 +291,69 @@ def create_code_categories():
 
 @app.route('/search_code_categories', methods=['GET', 'POST'])
 def search_code_categories():
-    # Initialize filter variables
-    category_name = None
-    description = None
-    is_active = None
 
-    # Check if the request method is POST
+    print('코드분류 조회::')
+
+    category_id = ''
+    category_name = ''
+    description = ''
+    is_active = ''
+
     if request.method == 'POST':
         category_id = request.form.get('search_category_id', '')
         category_name = request.form.get('search_category_name', '')
         description = request.form.get('search_description', '')
-        is_active = request.form.get('is_active', None)
+        is_active = request.form.get('is_active', '')
 
-    # Build query with filters
+        print('category_id::'+category_id)
+        print('category_name::'+category_name)
+        print('description::'+description)
+        print('is_active::'+str(is_active))
+
     query = CodeCategory.query
-    
+
     if category_id:
         query = query.filter(CodeCategory.category_id.ilike(f'%{category_id}%'))
-
     if category_name:
         query = query.filter(CodeCategory.category_name.ilike(f'%{category_name}%'))
-    
     if description:
         query = query.filter(CodeCategory.description.ilike(f'%{description}%'))
-    
-    if is_active is not None:
-        # Convert is_active to boolean for comparison
-        is_active = bool(is_active)
+    if is_active != '':
         query = query.filter(CodeCategory.is_active == is_active)
 
-    # Execute query and get results
     categories = query.all()
-    
-    return render_template('code_categories_list.html', categories=categories)
+
+    print('query='+str(query))   
+
+    return render_template('code_categories_list.html', 
+                           categories=categories, 
+                           search_category_id=category_id, 
+                           search_category_name=category_name, 
+                           search_description=description, 
+                           search_is_active=is_active)
+
+
+@app.route('/select_category_list', methods=['GET'])
+def select_categories_list():
+    print('코드분류목록조회::')
+
+    # Query all categories
+    categories = CodeCategory.query.all()
+
+    # Convert the query result to a list of dictionaries
+    category_list = [
+        {
+            'category_id': category.category_id,
+            'category_name': category.category_name
+        }
+        for category in categories
+    ]
+
+    # Print the query for debugging
+    print('categories=' + str(category_list))
+
+    # Return the list of categories as JSON
+    return jsonify({'categories': category_list})
 
 def create_app():
     app.register_blueprint(menu, url_prefix='/menu')  # 블루프린트 등록
