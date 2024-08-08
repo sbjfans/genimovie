@@ -1,24 +1,87 @@
 {% extends 'main.html' %}
 
 {% block content %}
-<h2>Influencers</h2>
-<form method="POST" action="">
-    <label for="name">Name:</label><br>
-    <input type="text" id="name" name="name"><br>
-    <label for="bio">Bio:</label><br>
-    <textarea id="bio" name="bio"></textarea><br><br>
-    <input type="submit" value="Add Influencer">
-</form>
 
-<h3>Influencer List</h3>
-<ul>
-    {% for influencer in influencers %}
-    <li>
-        <strong>{{ influencer.name }}</strong> - {{ influencer.bio }}
-        <form method="POST" action="{{ url_for('delete_influencer', id=influencer.influencer_id) }}" style="display:inline;">
-            <button type="submit">Delete</button>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인플루언서 관리</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/influcencer.css') }}">
+
+    <div class="form-container">
+        <h2>인플루언서 관리</h2>
+        <form method="POST" action="" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="name">성명</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="photo">사진</label>
+                <input type="file" id="photo" name="photo" accept="image/*" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="bio">내용</label>
+                <textarea id="bio" name="bio" style='width:25%' rows="5" required></textarea>
+                <input type="submit" value="저장">
+            </div>
+            
+           
         </form>
-    </li>
-    {% endfor %}
-</ul>
+    </div>
+
+
+<!-- Container for the view button and influencers list -->
+<div class="list-container">
+    <h3>인플루언서목록</h3>
+    <!-- Form to View/Reload the Code influencers List -->
+    <div class="view-button-container">
+        <form id='searchForm' method="POST" action="{{ url_for('search_influencers') }}" class="view-button-form">
+            <label for="search_name">성명</label>
+            <input type="text" id="search_name" name="search_name" value="{{ search_name }}">
+            
+            <!-- Initializing button -->
+            <input type="button" value="초기화" id="init-button" onclick="document.getElementById('searchForm').reset();">
+            <input type="submit" value="조회" id="view-button">
+        </form>
+    </div>
+    
+    <table id="influcencer" width="70%">
+        <thead style="background-color: #f8e3cd; color: #333;">
+            <tr>
+                <th data-sort="number" style="padding: 8px; text-align: center;">번호</th>
+                <th data-sort="name" style="padding: 8px; text-align: center;">성명</th>
+                <th data-sort="bio" style="padding: 8px; text-align: center;">내용</th>
+                <th data-sort="photo" style="padding: 8px; text-align: center;">사진</th>                
+            </tr>
+        </thead>
+        <tbody>
+            {% if influencers|length == 0 %}
+            <!-- No results row -->
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 20px;">조회된 결과가 없습니다</td>
+            </tr>
+            {% else %}
+            {% for influencer in influencers %}
+            <tr>
+                <td style="padding: 8px; text-align: right;">{{ influencers|length - loop.index + 1 }}</td>                
+                <td>{{ influencer.name }}</td>      
+                <td>{{ influencer.bio }}</td> 
+                <td></td>                           
+            </tr>
+            {% endfor %}
+            {% endif %}
+
+            <!-- Fill empty rows to ensure 15 rows in the table -->
+            {% for i in range(15 - influencers|length) %}
+            <tr>
+                <td style="padding: 8px; text-align: center;">&nbsp;</td>
+                <td style="padding: 8px;">&nbsp;</td>
+                <td style="padding: 8px;">&nbsp;</td>
+                <td style="padding: 8px;">&nbsp;</td>                
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
