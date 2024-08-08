@@ -53,6 +53,12 @@ def register():
 
     return render_template('register.html')
 
+# 로그 기록 함수
+def log_action(user_id, action):
+    log_entry = Log(user_id=user_id, action=action)
+    db.session.add(log_entry)
+    db.session.commit()
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
