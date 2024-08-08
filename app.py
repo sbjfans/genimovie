@@ -195,8 +195,10 @@ def log_action(user_id, action):
     db.session.add(log_entry)
     db.session.commit()
 
-# 라우트 설정
 
+
+
+# 라우트 설정
 @app.route('/')
 def home():
     return render_template('main_content.html')
