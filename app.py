@@ -229,6 +229,64 @@ def search_influencers():
                            search_name=name 
                           )
 
+
+
+
+
+# 영화 조회
+@app.route('/search_movies', methods=['GET', 'POST'])
+def search_movies():
+    print('영화 조회::')
+
+    movie_id = ''
+    title = ''
+    director_name = ''
+
+    if request.method == 'POST':
+        movie_id = request.form.get('search_movie_id', '')
+        title = request.form.get('search_title', '')
+        director_name = request.form.get('search_director_name', '')
+
+        print('movie_id::' + movie_id)
+        print('title::' + title)
+        print('director_name::' + director_name)
+
+    query = db.session.query(
+        Movie.movie_id,
+        Movie.title,
+        Movie.genre,
+        Movie.release_date,
+        db.func.coalesce(db.func.round(db.func.avg(Review.rating) * 2) / 2, 0).label('average_rating'),
+        Personnel.name.label('director_name')
+    ).outerjoin(Review, Movie.movie_id == Review.movie_id)\
+     .outerjoin(MoviePersonnel, Movie.movie_id == MoviePersonnel.movie_id)\
+     .outerjoin(Personnel, db.and_(MoviePersonnel.personnel_id == Personnel.personnel_id, Personnel.role_code == 'director'))\
+     .group_by(Movie.movie_id, Personnel.name)
+
+    if movie_id:
+        query = query.filter(Movie.movie_id.ilike(f'%{movie_id}%'))
+    if title:
+        query = query.filter(Movie.title.ilike(f'%{title}%'))
+    if director_name:
+        query = query.filter(Personnel.name.ilike(f'%{director_name}%'))
+
+    movies = query.all()
+
+    print('query=' + str(query))
+
+    return render_template('movies_list.html',
+                           movies=movies,
+                           search_movie_id=movie_id,
+                           search_title=title,
+                           search_director_name=director_name)
+
+
+
+
+
+
+
+
 def create_app():
     app.register_blueprint(menu, url_prefix='/menu')  # 블루프린트 등록
     return app
