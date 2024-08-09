@@ -5,6 +5,8 @@ import logging
 from menu import menu
 
 from models import db, Influencer, Notification, CodeCategory, CodeDetail, Menu, User, Movie, MovieImage, Personnel, MoviePersonnel, Recommendation, Review, UserMovieInfo, UserPlan, Event, PointTransaction, Log
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'  # Replace with your secret key
@@ -16,7 +18,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)  # Initialize SQLAlchemy with the app
 
+# 파일업로드 경로 설정
+UPLOAD_FOLDER = 'static/images'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
 
+# Ensure the upload folder exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # 라우트 설정
 
@@ -191,15 +199,29 @@ def select_categories_list():
 
 @app.route('/create_influencer', methods=['POST'])
 def create_influencer():
-    data = request.get_json()
-    new_influencer = Influencer(
-        name=data['name'],
-        bio=data.get('bio'),
-        created_by=data['created_by']
-    )
-    db.session.add(new_influencer)
-    db.session.commit()
-    return jsonify({'message': 'Influencer created', 'influencer_id': new_influencer.influencer_id}), 201
+    if request.method == 'POST':
+        name = request.form['name']
+        bio = request.form['bio']
+        img_path=''
+        
+        # Handle the file upload
+        if 'photo' not in request.files:
+            return "No file part"
+        file = request.files['photo']
+        if file.filename == '':
+            return "No selected file"
+        if file:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            img_path = '/'+UPLOAD_FOLDER
+            # Save to database
+            new_influencer = Influencer(name=name, bio=bio, img_path=img_path, img_nm=filename)
+            db.session.add(new_influencer)
+            db.session.commit()
+            
+            return redirect(url_for('search_influencers'))
+    
+    return render_template('influencers_list.html')
 
 @app.route('/search_influencers', methods=['GET', 'POST'])
 def search_influencers():

@@ -9,7 +9,7 @@
 
     <div class="form-container">
         <h2>인플루언서 관리</h2>
-        <form method="POST" action="" enctype="multipart/form-data">
+        <form method="POST" action="{{ url_for('create_influencer') }}" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="name">성명</label>
                 <input type="text" id="name" name="name" required>
@@ -26,10 +26,8 @@
                 <input type="submit" value="저장">
             </div>
             
-           
         </form>
     </div>
-
 
 <!-- Container for the view button and influencers list -->
 <div class="list-container">
@@ -46,28 +44,30 @@
         </form>
     </div>
     
-    <table id="influcencer" width="70%">
+    <table id="influcencer" width="70%" style="border-collapse: collapse; border: 1px solid #ddd;">
         <thead style="background-color: #f8e3cd; color: #333;">
             <tr>
-                <th data-sort="number" style="padding: 8px; text-align: center;">번호</th>
-                <th data-sort="name" style="padding: 8px; text-align: center;">성명</th>
-                <th data-sort="bio" style="padding: 8px; text-align: center;">내용</th>
-                <th data-sort="photo" style="padding: 8px; text-align: center;">사진</th>                
+                <th data-sort="number" style="width:5%;padding: 8px; text-align: center; border: 1px solid #ddd;">번호</th>
+                <th data-sort="name" style="width:7%;padding: 8px; text-align: center; border: 1px solid #ddd;">성명</th>
+                <th data-sort="bio" style="width:60%;padding: 8px; text-align: center; border: 1px solid #ddd;">내용</th>
+                <th data-sort="photo" style="padding: 8px; text-align: center; border: 1px solid #ddd;">사진</th>                
             </tr>
         </thead>
         <tbody>
             {% if influencers|length == 0 %}
             <!-- No results row -->
             <tr>
-                <td colspan="5" style="text-align: center; padding: 20px;">조회된 결과가 없습니다</td>
+                <td colspan="5" style="text-align: center; padding: 20px; border: 1px solid #ddd;">조회된 결과가 없습니다</td>
             </tr>
             {% else %}
             {% for influencer in influencers %}
             <tr>
-                <td style="padding: 8px; text-align: right;">{{ influencers|length - loop.index + 1 }}</td>                
-                <td>{{ influencer.name }}</td>      
-                <td>{{ influencer.bio }}</td> 
-                <td><img src="static/images/{{influencer.img_nm}}" alt="Image">{{ influencer.img_nm }}</td>                       
+                <td style="padding: 8px; text-align: right; border: 1px solid #ddd;">{{ influencers|length - loop.index + 1 }}</td>                
+                <td style="border: 1px solid #ddd;">{{ influencer.name }}</td>      
+                <td style="border: 1px solid #ddd;">{{ influencer.bio }}</td> 
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">
+                    <img src="{{influencer.img_path}}/{{influencer.img_nm}}" alt="Image" width="40%" height="40%">
+                </td>                       
             </tr>
             {% endfor %}
             {% endif %}
@@ -75,10 +75,10 @@
             <!-- Fill empty rows to ensure 15 rows in the table -->
             {% for i in range(15 - influencers|length) %}
             <tr>
-                <td style="padding: 8px; text-align: center;">&nbsp;</td>
-                <td style="padding: 8px;">&nbsp;</td>
-                <td style="padding: 8px;">&nbsp;</td>
-                <td style="padding: 8px;">&nbsp;</td>                
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">&nbsp;</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">&nbsp;</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">&nbsp;</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">&nbsp;</td>                
             </tr>
             {% endfor %}
         </tbody>
