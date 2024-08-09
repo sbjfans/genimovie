@@ -283,7 +283,7 @@ def search_movies():
     ).outerjoin(Review, Movie.movie_id == Review.movie_id)\
      .outerjoin(MoviePersonnel, Movie.movie_id == MoviePersonnel.movie_id)\
      .outerjoin(Personnel, db.and_(MoviePersonnel.personnel_id == Personnel.personnel_id, Personnel.role_code == 'director'))\
-     .group_by(Movie.movie_id, Personnel.name)
+     .outerjoin(MovieImage, Movie.movie_id == MovieImage.movie_id).group_by(Movie.movie_id, Personnel.name, MovieImage.image_url)  
 
     if movie_id:
         query = query.filter(Movie.movie_id.ilike(f'%{movie_id}%'))
@@ -304,10 +304,77 @@ def search_movies():
 
 
 
+@app.route('/search_movies_pop', methods=['GET', 'POST'])
+def search_movies_pop():
+    print('영화 팝업 조회::')
+
+    movie_id = ''
+    title = ''
+    director_name = ''
+
+    if request.method == 'POST':
+        movie_id = request.form.get('search_movie_id', '')
+        title = request.form.get('search_title', '')
+        director_name = request.form.get('search_director_name', '')
+
+        print('movie_id::' + movie_id)
+        print('title::' + title)
+        print('director_name::' + director_name)
+
+    # 영화와 이미지 테이블 조인
+    query = db.session.query(
+        Movie.movie_id,
+        Movie.title,
+        Movie.genre,
+        Movie.release_date,
+        db.func.coalesce(db.func.round(db.func.avg(Review.rating) * 2) / 2, 0).label('average_rating'),
+        Personnel.name.label('director_name'),
+        MovieImage.image_url  # 이미지 URL 추가
+    ).outerjoin(Review, Movie.movie_id == Review.movie_id)\
+     .outerjoin(MoviePersonnel, Movie.movie_id == MoviePersonnel.movie_id)\
+     .outerjoin(Personnel, db.and_(MoviePersonnel.personnel_id == Personnel.personnel_id, Personnel.role_code == 'director'))\
+     .outerjoin(MovieImage, Movie.movie_id == MovieImage.movie_id).group_by(Movie.movie_id, Personnel.name, MovieImage.image_url)  
+
+    if movie_id:
+        query = query.filter(Movie.movie_id.ilike(f'%{movie_id}%'))
+    if title:
+        query = query.filter(Movie.title.ilike(f'%{title}%'))
+    if director_name:
+        query = query.filter(Personnel.name.ilike(f'%{director_name}%'))
+
+    movies = query.all()
+
+    print('query=' + str(query))
+
+    return render_template('movies_list_pop.html',
+                           movies=movies,
+                           search_movie_id=movie_id,
+                           search_title=title,
+                           search_director_name=director_name)
 
 
 
 
+@app.route('/save_recommendations', methods=['POST'])
+def save_recommendations():
+    data = request.json
+    user_id = data['user_id']
+    movie_plan_ids = data['movie_plan_ids']
+    
+    try:
+        for movie_plan_id in movie_plan_ids:
+            recommendation = Recommendation(
+                user_id=user_id,
+                movie_plan_id=movie_plan_id,
+                is_recommended=True,
+                created_by=user_id
+            )
+            db.session.add(recommendation)
+        db.session.commit()
+        return jsonify({"message": "Recommendations saved successfully!"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 500
 
 def create_app():
     app.register_blueprint(menu, url_prefix='/menu')  # 블루프린트 등록
