@@ -358,24 +358,47 @@ def search_movies_pop():
 
 @app.route('/save_recommendations', methods=['POST'])
 def save_recommendations():
-    data = request.json
-    user_id = data['user_id']
-    movie_plan_ids = data['movie_plan_ids']
+    data = request.get_json()
+    user_id = data.get('user_id')
+    movie_plan_ids = data.get('movie_plan_ids')
+
+    print('추천 영화 movie_plan_ids='+str(movie_plan_ids))
+
+    if not user_id or not movie_plan_ids:
+        return jsonify({'message': '잘못된 요청입니다.'}), 400
+
+    # 현재 사용자의 추천 영화 삭제 (선택 사항)
+    UserPlan.query.filter_by(user_id=user_id).delete()
+
+    # 추천 영화 추가
+    for movie_id in movie_plan_ids:
+        new_recommendation = UserPlan(
+            user_id=user_id,
+            movie_id=movie_id
+           
+        )
+        db.session.add(new_recommendation)
+
+    db.session.commit()
+
+    return jsonify({'message': '추천 영화가 저장되었습니다.'})
+
+@app.route('/search_recommendations', methods=['POST'])
+def search_recommendations():
+    recommendations = UserPlan.query.all()
     
-    try:
-        for movie_plan_id in movie_plan_ids:
-            recommendation = Recommendation(
-                user_id=user_id,
-                movie_plan_id=movie_plan_id,
-                is_recommended=True,
-                created_by=user_id
-            )
-            db.session.add(recommendation)
-        db.session.commit()
-        return jsonify({"message": "Recommendations saved successfully!"}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"message": str(e)}), 500
+    if not recommendations:
+        return jsonify({'message': '추천 영화가 없습니다.'}), 404
+    
+    result = []
+    for rec in recommendations:
+        result.append({
+            'user_plan_id': rec.user_plan_id,
+            'movie_id': rec.movie_id
+        })
+    
+    return jsonify(result)
+
 
 def create_app():
     app.register_blueprint(menu, url_prefix='/menu')  # 블루프린트 등록

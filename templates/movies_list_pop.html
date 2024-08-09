@@ -78,6 +78,8 @@
         .empty-row td {
             height: 50px; /* Adjust height as needed */
         }
+
+       
     </style>
 </head>
 <body>
@@ -119,8 +121,8 @@
 
     <div class="button-container">
         <br><br><br><br><br><br><br><br>
-        <button id="add-to-recommendation">→ 추가</button>
-        <button id="remove-from-recommendation">← 삭제</button>
+        <button id="add-to-recommendation">추가</button>
+        <button id="remove-from-recommendation">삭제</button>
     </div>
 
     <div class="recommendation-list-container">
@@ -143,13 +145,14 @@
                 </tbody>
             </table>
         </div>
-        <button id="save-button">저장</button>
+        <button id="save-button">저장</button> 
     </div>
 </div>
 
 <script>
     // 이미 추천된 영화 ID 목록을 저장
     const recommendedMovieIds = new Set();
+    
 
     function updateRecommendedMovieIds() {
         recommendedMovieIds.clear();
@@ -209,27 +212,35 @@
         updateRecommendationTable();
     });
 
-    // 저장 버튼 클릭 이벤트
     document.getElementById('save-button').addEventListener('click', function() {
-        let moviePlanIds = [];
-        document.querySelectorAll('#recommendationTable .recommendation-checkbox').forEach(function(checkbox) {
-            moviePlanIds.push(checkbox.dataset.movieId);
-        });
+    let moviePlanIds = [];
+    document.querySelectorAll('#recommendationTable .recommendation-checkbox').forEach(function(checkbox) {
+        moviePlanIds.push(checkbox.dataset.movieId);
+    });
 
-        fetch('/save_recommendations', {
+    fetch('/save_recommendations', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                user_id: 1, // Replace with actual user ID
+                user_id: 1, // 실제 사용자 ID로 대체
                 movie_plan_ids: moviePlanIds
             })
         })
         .then(response => response.json())
-        .then(data => alert(data.message))
-        .catch(error => console.error('Error:', error));
+        .then(data => {
+            alert(data.message); // 성공 메시지 표시
+            // 팝업을 닫고 새 페이지로 이동
+            window.close(); // 팝업 닫기 (브라우저 보안 정책에 따라 이 함수가 실패할 수 있음)
+            window.location.href = '/movie_recommendations_list.html'; // 페이지 이동
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('추천 목록 저장 중 오류가 발생했습니다.');
+        });
     });
+
 
     // 초기화 시 추천 영화 ID 목록 업데이트
     document.addEventListener('DOMContentLoaded', function() {

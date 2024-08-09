@@ -2,7 +2,7 @@
 
 {% block content %}
 <h2>Movie Recommendations List</h2>
-<table>
+<table id="recommendationsTable">
     <thead>
         <tr>
             <th>ID</th>
@@ -11,13 +11,38 @@
         </tr>
     </thead>
     <tbody>
-        {% for recommendation in recommendations %}
-        <tr>
-            <td>{{ recommendation.id }}</td>
-            <td>{{ recommendation.movie_id }}</td>
-            <td>{{ recommendation.recommendation }}</td>
-        </tr>
-        {% endfor %}
+        <!-- JavaScript will populate this section -->
     </tbody>
 </table>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/search_recommendations', {
+        method: 'POST'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        const tbody = document.querySelector('#recommendationsTable tbody');
+        tbody.innerHTML = ''; // Clear any existing content
+
+        data.forEach(recommendation => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${recommendation.user_plan_id}</td>
+                <td>${recommendation.movie_id}</td>
+                <td>Recommendation Info</td> <!-- Add additional details if needed -->
+            `;
+            tbody.appendChild(row);
+        });
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+    });
+});
+</script>
 {% endblock %}

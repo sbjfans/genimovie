@@ -129,11 +129,10 @@ class UserMovieInfo(db.Model):
 
 class UserPlan(db.Model):
     __tablename__ = 'tb_user_plan'
-    tb_user_plan_id = db.Column(db.Integer, primary_key=True)
+    user_plan_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
     movie_id = db.Column(db.Integer, nullable=False)
-    recommendations_received = db.Column(db.Integer, default=0)
-    recommendations_declined = db.Column(db.Integer, default=0)
+    
 
 class Event(db.Model):
     __tablename__ = 'tb_events'
