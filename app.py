@@ -279,7 +279,8 @@ def search_movies():
         Movie.genre,
         Movie.release_date,
         db.func.coalesce(db.func.round(db.func.avg(Review.rating) * 2) / 2, 0).label('average_rating'),
-        Personnel.name.label('director_name')
+        Personnel.name.label('director_name'),
+        MovieImage.image_url  # 이미지 URL 추가
     ).outerjoin(Review, Movie.movie_id == Review.movie_id)\
      .outerjoin(MoviePersonnel, Movie.movie_id == MoviePersonnel.movie_id)\
      .outerjoin(Personnel, db.and_(MoviePersonnel.personnel_id == Personnel.personnel_id, Personnel.role_code == 'director'))\
