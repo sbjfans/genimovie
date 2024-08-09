@@ -2,24 +2,143 @@
 
 {% block content %}
 <h2>User Movie Info List</h2>
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>User ID</th>
-            <th>Movie ID</th>
-            <th>Rating</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for info in user_movie_info %}
-        <tr>
-            <td>{{ info.id }}</td>
-            <td>{{ info.user_id }}</td>
-            <td>{{ info.movie_id }}</td>
-            <td>{{ info.rating }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<!-- Container for the view button and categories list -->
+<div class="list-container">
+    <h3>영화 목록</h3>
+    <!-- Form to View/Reload the Movie List -->
+    <div class="view-button-container">
+        <form id='searchForm' method="POST" action="{{ url_for('search_user_movie_info') }}" class="view-button-form">
+            <label for="search_user_name">사용자명</label>
+            <input type="text" id="search_user_name" name="search_user_name" value="{{ search_user_name }}">
+            
+            <label for="search_movie_name">영화명</label>
+            <input type="text" id="search_movie_name" name="search_movie_name" value="{{ search_movie_name }}">
+            
+            <label for="search_recommended">타인 추천 여부</label>
+            <select id="search_recommended" name="search_recommended">
+                <option value="">전체</option>
+                <option value="Y" {% if search_recommended == 'Y' %}selected{% endif %}>예</option>
+                <option value="N" {% if search_recommended == 'N' %}selected{% endif %}>아니오</option>
+            </select>
+            
+            <!-- Initializing button -->
+            <input type="button" value="초기화" id="init-button" onclick="document.getElementById('searchForm').reset();">
+            <input type="submit" value="조회" id="view-button">
+        </form>
+    </div>
+    
+    <table id="movieTable" width="70%">
+        <thead style="background-color: #f8e3cd; color: #333;">
+            <tr>
+                <th data-sort="user_name" style="padding: 8px; text-align: center;">사용자명</th>
+                <th data-sort="movie_name" style="padding: 8px; text-align: center;">영화명</th>
+                <th data-sort="view_count">시청횟수</th>
+                <th data-sort="rating">평점</th>
+                <th data-sort="is_recommended" style="padding: 8px; text-align: center;">추천 여부</th>
+                <th data-sort="is_recommended_to_others" style="padding: 8px; text-align: center;">타인 추천 여부</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if movies|length == 0 %}
+            <!-- No results row -->
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 20px;">조회된 결과가 없습니다</td>
+            </tr>
+            {% else %}
+            {% for movie in movies %}
+            <tr>
+                <td style="padding: 8px; text-align: center;">{{ movie.User.username }}</td>
+                <td style="padding: 8px; text-align: center;">{{ movie.Movie.title }}</td>
+                <td style="padding: 8px; text-align: right;">{{ movie.UserMovieInfo.view_count }}</td>
+                <td style="padding: 8px; text-align: right;">{{ movie.UserMovieInfo.rating }}</td>
+                <td style="padding: 8px; text-align: center;">{{ '예' if movie.UserMovieInfo.is_recommended else '아니오' }}</td>
+                <td style="padding: 8px; text-align: center;">{{ '예' if movie.UserMovieInfo.is_recommended_to_others else '아니오' }}</td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+
+            <!-- Fill empty rows to ensure 15 rows in the table -->
+            {% for i in range(15 - movies|length) %}
+            <tr>
+                <td style="padding: 8px; text-align: center;">&nbsp;</td>
+                <td style="padding: 8px; text-align: center;">&nbsp;</td>
+                <td style="padding: 8px; text-align: right;">&nbsp;</td>
+                <td style="padding: 8px; text-align: right;">&nbsp;</td>
+                <td style="padding: 8px; text-align: center;">&nbsp;</td>
+                <td style="padding: 8px; text-align: center;">&nbsp;</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* Existing styles */
+
+    .view-button-form select {
+        width: calc(100% - 16px);
+        padding: 8px;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    /* Additional responsive design adjustments */
+    @media (max-width: 768px) {
+        table {
+            font-size: 14px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Reset form function
+        function resetForm() {
+            document.getElementById('searchForm').reset();
+        }
+
+        // Assign the reset function to the "초기화" button
+        document.getElementById('init-button').addEventListener('click', function() {
+            resetForm();
+        });
+
+        // Sorting functionality
+        const table = document.getElementById('movieTable');
+        const headers = table.querySelectorAll('th[data-sort]');
+        let sortOrder = {};
+
+        headers.forEach(header => {
+            header.addEventListener('click', function() {
+                const sortKey = header.dataset.sort;
+                const tbody = table.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                const isAscending = sortOrder[sortKey] = !sortOrder[sortKey];
+
+                rows.sort((a, b) => {
+                    const cellA = a.querySelector(`td:nth-child(${header.cellIndex + 1})`).innerText.trim();
+                    const cellB = b.querySelector(`td:nth-child(${header.cellIndex + 1})`).innerText.trim();
+
+                    // Check if the values are numbers
+                    const valueA = isNaN(cellA) ? cellA : parseFloat(cellA);
+                    const valueB = isNaN(cellB) ? cellB : parseFloat(cellB);
+
+                    if (typeof valueA === 'number' && typeof valueB === 'number') {
+                        return isAscending ? valueA - valueB : valueB - valueA;
+                    } else {
+                        return isAscending ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+                    }
+                });
+
+                // Re-append sorted rows to the tbody
+                rows.forEach(row => tbody.appendChild(row));
+            });
+        });
+    });
+</script>
 {% endblock %}

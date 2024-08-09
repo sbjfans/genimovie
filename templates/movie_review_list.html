@@ -2,22 +2,97 @@
 
 {% block content %}
 <h2>Movie Reviews List</h2>
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Movie ID</th>
-            <th>Review</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for review in reviews %}
-        <tr>
-            <td>{{ review.id }}</td>
-            <td>{{ review.movie_id }}</td>
-            <td>{{ review.review }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+
+<div class="list-container">
+    <h3>리뷰 목록</h3>
+    <!-- Form to filter reviews -->
+    <div class="view-button-container">
+        <form id='searchForm' method="POST" action="{{ url_for('reviews') }}" class="view-button-form">
+            <label for="search_user_name">사용자명</label>
+            <input type="text" id="search_user_name" name="search_user_name" value="{{ request.form.search_user_name }}">
+            
+            <label for="search_movie_name">영화명</label>
+            <input type="text" id="search_movie_name" name="search_movie_name" value="{{ request.form.search_movie_name }}">
+            
+            <input type="submit" value="조회" id="view-button">
+        </form>
+    </div>
+
+    <table id="reviewTable" width="80%">
+        <thead style="background-color: #f8e3cd; color: #333;">
+            <tr>
+                <th style="padding: 8px; text-align: center;">리뷰 번호</th>
+                <th style="padding: 8px; text-align: center;">영화명</th>
+                <th style="padding: 8px; text-align: center;">유저명</th>
+                <th style="padding: 8px; text-align: center;">평점</th>
+                <th style="padding: 8px; text-align: center;">리뷰</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if reviews|length == 0 %}
+            <!-- No results row -->
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 20px;">조회된 결과가 없습니다</td>
+            </tr>
+            {% else %}
+            {% for review, movie_title, username in reviews %}
+            <tr>
+                <td style="padding: 8px; text-align: center;">{{ review.review_id }}</td>
+                <td style="padding: 8px; text-align: center;">{{ movie_title }}</td>
+                <td style="padding: 8px; text-align: center;">{{ username }}</td>
+                <td style="padding: 8px; text-align: center;">{{ review.rating }}</td>
+                <td style="padding: 8px;">{{ review.review_text }}</td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+
+            <!-- Fill empty rows to ensure consistent table height -->
+            {% for i in range(15 - reviews|length) %}
+            <tr>
+                <td style="padding: 8px; text-align: center;">&nbsp;</td>
+                <td style="padding: 8px; text-align: center;">&nbsp;</td>
+                <td style="padding: 8px; text-align: center;">&nbsp;</td>
+                <td style="padding: 8px; text-align: center;">&nbsp;</td>
+                <td style="padding: 8px;">&nbsp;</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .view-button-form {
+        margin-bottom: 20px;
+    }
+    .view-button-form label {
+        margin-right: 10px;
+    }
+    .view-button-form input[type="text"] {
+        padding: 5px;
+        margin-right: 10px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }
+    .view-button-form input[type="submit"] {
+        padding: 5px 15px;
+        border-radius: 4px;
+        background-color: #f8e3cd;
+        border: 1px solid #ccc;
+        cursor: pointer;
+    }
+    table {
+        margin-top: 20px;
+        border-collapse: collapse;
+        width: 100%;
+    }
+    table th, table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+    table th {
+        background-color: #f8e3cd;
+    }
+</style>
 {% endblock %}

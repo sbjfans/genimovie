@@ -1,23 +1,148 @@
-{% extends 'main.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .recommendation {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        .recommendation img {
+            border-radius: 5px;
+            width: 150px;
+            height: auto;
+            margin-right: 15px;
+        }
+        .recommendation h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.5em;
+        }
+        .recommendation p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Movie Recommendations</h1>
+
+    {% extends 'main.html' %}
 
 {% block content %}
-<h2>Movie Recommendations List</h2>
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Movie ID</th>
-            <th>Recommendation</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for recommendation in recommendations %}
-        <tr>
-            <td>{{ recommendation.id }}</td>
-            <td>{{ recommendation.movie_id }}</td>
-            <td>{{ recommendation.recommendation }}</td>
-        </tr>
+    <style>
+        .container {
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .header button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .header button:hover {
+            background-color: #0056b3;
+        }
+        .recommendation {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        .movie-poster {
+            width: 150px; /* 영화 포스터의 크기 조정 */
+            height: auto;
+            border-radius: 5px;
+        }
+        .movie-info {
+            margin-left: 20px; /* 영화 포스터와 겹치지 않도록 조정 */
+            flex: 1;
+        }
+        .movie-info h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+        }
+        .ai-image {
+            margin-left: 10px; /* 제목과 AI 이미지 간의 간격 조정 */
+        }
+        .ai-image img {
+            width: 80px; /* AI 이미지의 크기 조정 */
+            height: auto;
+            border-radius: 5px;
+        }
+        .movie-info p {
+            margin: 5px 0;
+        }
+    </style>
+    
+    <div class="container">
+        <div class="header">
+            <h1>오늘의 AI 추천 영화</h1>
+            <button id="refreshButton" onclick="window.location.href='/movie_recommendations'">조회하기</button>
+        </div>
+        {% for rec in recommendations %}
+            <div class="recommendation">
+                {% if rec.image_url %}
+                    <img src="{{ url_for('static', filename='images/' + rec.image_url) }}" alt="{{ rec.movie_title }} Poster" class="movie-poster">
+                {% endif %}
+                <div class="movie-info">
+                    <h2>
+                        {{ rec.movie_title }}
+                        <div class="ai-image">
+                            <img src="{{ url_for('static', filename='images/' + rec.ai_name|lower + '.jpg') }}" alt="{{ rec.ai_name }}">
+                        </div>
+                    </h2>
+                    <p><strong>Genre:</strong> {{ rec.genre }}</p>
+                    <p><strong>Description:</strong> {{ rec.description }}</p>
+                </div>
+            </div>
         {% endfor %}
-    </tbody>
-</table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 로컬 스토리지에서 버튼 클릭 여부를 확인
+            const hasVisited = localStorage.getItem('hasVisited');
+
+            if (!hasVisited) {
+                // 버튼 클릭
+                document.getElementById('refreshButton').click();
+                // 로컬 스토리지에 'hasVisited' 값을 설정
+                localStorage.setItem('hasVisited', 'true');
+            }
+        });
+    </script>
 {% endblock %}
+
+
+    
+
+
+
+    
+
+</body>
+</html>

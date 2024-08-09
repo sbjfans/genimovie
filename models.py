@@ -66,7 +66,7 @@ class Movie(db.Model):
     genre = db.Column(db.String(100), nullable=True)
     description = db.Column(db.Text, nullable=True)
     release_date = db.Column(db.DateTime, nullable=True)
-    review_content = db.Column(db.Text, nullable=True)
+    media_review = db.Column(db.Text, nullable=True)
 
 class MovieImage(db.Model):
     __tablename__ = 'tb_movie_images'
@@ -123,7 +123,7 @@ class UserMovieInfo(db.Model):
     user_movie_info_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
     movie_id = db.Column(db.Integer, nullable=False)
-    watch_count = db.Column(db.Integer, default=0)
+    view_count = db.Column(db.Integer, default=0)
     rating = db.Column(db.Integer, nullable=True)
     is_recommended = db.Column(db.Boolean, default=False)
 

@@ -5,6 +5,8 @@ import logging
 from menu import menu
 
 from models import db, Influencer, Notification, CodeCategory, CodeDetail, Menu, User, Movie, MovieImage, Personnel, MoviePersonnel, Recommendation, Review, UserMovieInfo, UserPlan, Event, PointTransaction, Log
+from models import db, UserMovieInfo
+from models import db, Movie, MovieImage
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'  # Replace with your secret key
@@ -189,6 +191,7 @@ def select_categories_list():
     return jsonify({'categories': category_list})
 
 
+# 인플루언서
 @app.route('/create_influencer', methods=['POST'])
 def create_influencer():
     data = request.get_json()
@@ -281,6 +284,107 @@ def search_movies():
                            search_director_name=director_name)
 
 
+
+
+
+
+# 유저 리뷰 조회
+@app.route('/reviews', methods=['GET', 'POST'])
+def reviews():
+    if request.method == 'POST':
+        # 폼에서 검색 조건 가져오기
+        search_user_name = request.form.get('search_user_name', '').strip()
+        search_movie_name = request.form.get('search_movie_name', '').strip()
+
+        # 쿼리 작성: 필요한 조건에 따라 필터링
+        query = db.session.query(Review, Movie.title, User.username)\
+            .join(Movie, Review.movie_id == Movie.movie_id)\
+            .join(User, Review.user_id == User.user_id)
+
+        if search_user_name:
+            query = query.filter(User.username.ilike(f"%{search_user_name}%"))
+        if search_movie_name:
+            query = query.filter(Movie.title.ilike(f"%{search_movie_name}%"))
+
+        reviews = query.all()
+    else:
+        # 기본적으로 모든 리뷰를 가져오기
+        reviews = db.session.query(Review, Movie.title, User.username)\
+            .join(Movie, Review.movie_id == Movie.movie_id)\
+            .join(User, Review.user_id == User.user_id)\
+            .all()
+
+    # HTML 페이지로 리뷰 데이터 전달
+    return render_template('movie_review_list.html', reviews=reviews)
+
+
+
+
+
+# 유저 영화 시청 추천 정보 조회
+@app.route('/search_user_movie_info', methods=['GET', 'POST'])
+def search_user_movie_info():
+    search_user_name = request.form.get('search_user_name', '')
+    search_movie_name = request.form.get('search_movie_name', '')
+    search_recommended = request.form.get('search_recommended', '')
+
+    # Join User, Movie, and UserMovieInfo tables
+    query = db.session.query(UserMovieInfo, Movie, User).join(
+        Movie, UserMovieInfo.movie_id == Movie.movie_id
+    ).join(
+        User, UserMovieInfo.user_id == User.user_id
+    )
+
+    # Apply filters based on the search criteria
+    if search_user_name:
+        query = query.filter(User.username.ilike(f'%{search_user_name}%'))
+    if search_movie_name:
+        query = query.filter(Movie.title.ilike(f'%{search_movie_name}%'))
+    if search_recommended:
+        query = query.filter(UserMovieInfo.is_recommended == (search_recommended == 'Y'))
+
+    movies = query.all()
+
+    return render_template('user_movie_info_list.html', 
+                           movies=movies, 
+                           search_user_name=search_user_name,
+                           search_movie_name=search_movie_name,
+                           search_recommended=search_recommended)
+
+
+
+
+
+
+@app.route('/movie_recommendations')
+def movie_recommendations():
+    # 각 AI의 이름
+    ai_names = ['openai', 'Claude3', 'Meta', 'copliot']
+    
+    # 영화 추천을 위한 결과 저장할 리스트
+    recommendations = []
+    
+    for ai in ai_names:
+        # 랜덤으로 영화 선택
+        movie = Movie.query.order_by(db.func.random()).first()
+        
+        if movie:
+            # 영화의 이미지 선택
+            image = MovieImage.query.filter_by(movie_id=movie.movie_id).first()
+            # 영화의 장르, 설명, 포스터 이미지 URL
+            genre = movie.genre
+            description = movie.description
+            image_url = image.image_url if image else None
+            
+            recommendations.append({
+                'ai_name': ai,
+                'movie_title': movie.title,
+                'genre': genre,
+                'description': description,
+                'image_url': image_url
+            })
+    
+    return render_template('movie_recommendations_list.html', recommendations=recommendations)
 
 
 
