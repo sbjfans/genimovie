@@ -33,6 +33,12 @@ def login_log_list():
 def movies_list():
     return render_template('movies_list.html')
 
+# 영화 관리 팝업관련 라우트
+@menu.route('/movies_list_pop')
+def movies_list_pop():
+    return render_template('movies_list_pop.html')
+
+
 @menu.route('/movie_review_list')
 def movie_review_list():
     return render_template('movie_review_list.html')

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>영화 추천 목록</title>
+    <style>
+        .container {
+            display: flex;
+            align-items: flex-start;
+            margin: 20px;
+        }
+        .list-container, .recommendation-list-container {
+            width: 390px; /* Increased width by 30% */
+            position: relative;
+        }
+        .table-container {
+            height: 400px; /* Adjust this height according to your needs */
+            overflow-y: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        th, td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th {
+            background-color: #f8e3cd;
+        }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 20px;
+        }
+        .button-container button {
+            margin: 5px;
+            padding: 5px 15px;
+        }
+        .search-form {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .search-form label {
+            margin-right: 10px;
+            margin-bottom: 5px;
+        }
+        .search-form input[type="text"] {
+            margin-right: 10px;
+            margin-bottom: 5px;
+        }
+        .search-form input[type="button"],
+        .search-form input[type="submit"] {
+            margin-left: 5px;
+        }
+        .search-form .form-item {
+            margin-right: 10px;
+        }
+        .recommendation-list-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .recommendation-list-container table {
+            border-collapse: collapse;
+        }
+        .no-recommendation {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+            font-style: italic;
+        }
+        .empty-row td {
+            height: 50px; /* Adjust height as needed */
+        }
+
+       
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="list-container">
+        <h3>영화 목록</h3>
+        <form id="searchForm" method="POST" action="{{ url_for('search_movies_pop') }}" class="search-form">
+            <div class="form-item">
+                <label for="search_title">제목:</label>
+                <input type="text" id="search_title" name="search_title" value="{{ search_title }}">
+            </div>
+            <input type="button" value="초기화" id="init-button" onclick="document.getElementById('searchForm').reset();">
+            <input type="submit" value="조회" id="view-button">
+        </form>
+        <div class="table-container">
+            <table id="movieTable">
+                <thead>
+                    <tr>
+                        <th>선택</th>
+                        <th>영화 ID</th>
+                        <th>제목</th>
+                        <th style="width:40%">포스터</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movie in movies %}
+                    <tr>
+                        <td><input type="checkbox" class="movie-checkbox" data-movie-id="{{ movie.movie_id }}" data-movie-title="{{ movie.title }}" data-movie-poster="{{ movie.poster_url }}"></td>
+                        <td>{{ movie.movie_id }}</td>
+                        <td>{{ movie.title }}</td>
+                        <td><img src="static/images/{{movie.image_url}}" alt="" style="width: 130px; height: auto;"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="button-container">
+        <br><br><br><br><br><br><br><br>
+        <button id="add-to-recommendation">추가</button>
+        <button id="remove-from-recommendation">삭제</button>
+    </div>
+
+    <div class="recommendation-list-container">
+        <br><br>
+        <h3>추천 영화 목록</h3>
+        <div class="table-container">
+            <table id="recommendationTable">
+                <thead>
+                    <tr>
+                        <th>선택</th>
+                        <th>영화 ID</th>
+                        <th>제목</th>
+                    </tr>
+                </thead>
+                <tbody id="recommendationTableBody">
+                    <!-- 기본 빈 행 5개 추가 -->
+                    <tr class="empty-row">
+                        <td colspan="3">추천 영화가 없습니다.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <button id="save-button">저장</button> 
+    </div>
+</div>
+
+<script>
+    // 이미 추천된 영화 ID 목록을 저장
+    const recommendedMovieIds = new Set();
+    
+
+    function updateRecommendedMovieIds() {
+        recommendedMovieIds.clear();
+        document.querySelectorAll('#recommendationTable .recommendation-checkbox').forEach(function(checkbox) {
+            recommendedMovieIds.add(checkbox.dataset.movieId);
+        });
+    }
+
+    function updateRecommendationTable() {
+        const tbody = document.getElementById('recommendationTableBody');
+        const emptyRow = tbody.querySelector('.empty-row');
+
+        if (tbody.children.length > 1) {
+            emptyRow.style.display = 'none';
+        } else {
+            emptyRow.style.display = 'table-row';
+        }
+    }
+
+    // 추가 버튼 클릭 이벤트
+    document.getElementById('add-to-recommendation').addEventListener('click', function() {
+        let addedMovies = [];
+        document.querySelectorAll('.movie-checkbox:checked').forEach(function(checkbox) {
+            let movieId = checkbox.dataset.movieId;
+            let movieTitle = checkbox.dataset.movieTitle;
+
+            if (recommendedMovieIds.has(movieId)) {
+                alert(`영화 "${movieTitle}"는 이미 추천 목록에 추가되었습니다.`);
+            } else {
+                let newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td><input type="checkbox" class="recommendation-checkbox" data-movie-id="${movieId}" data-movie-title="${movieTitle}"></td>
+                    <td>${movieId}</td>
+                    <td>${movieTitle}</td>
+                `;
+
+                document.querySelector('#recommendationTable tbody').appendChild(newRow);
+                recommendedMovieIds.add(movieId);
+                addedMovies.push(movieId);
+            }
+
+            checkbox.checked = false;
+        });
+        if (addedMovies.length > 0) {
+            updateRecommendedMovieIds();
+            updateRecommendationTable();
+        }
+    });
+
+    // 삭제 버튼 클릭 이벤트
+    document.getElementById('remove-from-recommendation').addEventListener('click', function() {
+        document.querySelectorAll('.recommendation-checkbox:checked').forEach(function(checkbox) {
+            let row = checkbox.closest('tr');
+            row.parentNode.removeChild(row);
+            recommendedMovieIds.delete(checkbox.dataset.movieId);
+        });
+        updateRecommendationTable();
+    });
+
+    document.getElementById('save-button').addEventListener('click', function() {
+    let moviePlanIds = [];
+    document.querySelectorAll('#recommendationTable .recommendation-checkbox').forEach(function(checkbox) {
+        moviePlanIds.push(checkbox.dataset.movieId);
+    });
+
+    fetch('/save_recommendations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                user_id: 1, // 실제 사용자 ID로 대체
+                movie_plan_ids: moviePlanIds
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message); // 성공 메시지 표시
+            // 팝업을 닫고 새 페이지로 이동
+            window.close(); // 팝업 닫기 (브라우저 보안 정책에 따라 이 함수가 실패할 수 있음)
+            window.location.href = '/movie_recommendations_list.html'; // 페이지 이동
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('추천 목록 저장 중 오류가 발생했습니다.');
+        });
+    });
+
+
+    // 초기화 시 추천 영화 ID 목록 업데이트
+    document.addEventListener('DOMContentLoaded', function() {
+        updateRecommendedMovieIds();
+        updateRecommendationTable();
+    });
+</script>
+
+</body>
+</html>

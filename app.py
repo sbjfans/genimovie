@@ -7,6 +7,8 @@ from menu import menu
 from models import db, Influencer, Notification, CodeCategory, CodeDetail, Menu, User, Movie, MovieImage, Personnel, MoviePersonnel, Recommendation, Review, UserMovieInfo, UserPlan, Event, PointTransaction, Log
 from models import db, UserMovieInfo
 from models import db, Movie, MovieImage
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'  # Replace with your secret key
@@ -18,7 +20,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)  # Initialize SQLAlchemy with the app
 
+# 파일업로드 경로 설정
+UPLOAD_FOLDER = 'static/images'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
 
+# Ensure the upload folder exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # 라우트 설정
 
@@ -194,15 +202,29 @@ def select_categories_list():
 # 인플루언서
 @app.route('/create_influencer', methods=['POST'])
 def create_influencer():
-    data = request.get_json()
-    new_influencer = Influencer(
-        name=data['name'],
-        bio=data.get('bio'),
-        created_by=data['created_by']
-    )
-    db.session.add(new_influencer)
-    db.session.commit()
-    return jsonify({'message': 'Influencer created', 'influencer_id': new_influencer.influencer_id}), 201
+    if request.method == 'POST':
+        name = request.form['name']
+        bio = request.form['bio']
+        img_path=''
+        
+        # Handle the file upload
+        if 'photo' not in request.files:
+            return "No file part"
+        file = request.files['photo']
+        if file.filename == '':
+            return "No selected file"
+        if file:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            img_path = '/'+UPLOAD_FOLDER
+            # Save to database
+            new_influencer = Influencer(name=name, bio=bio, img_path=img_path, img_nm=filename)
+            db.session.add(new_influencer)
+            db.session.commit()
+            
+            return redirect(url_for('search_influencers'))
+    
+    return render_template('influencers_list.html')
 
 @app.route('/search_influencers', methods=['GET', 'POST'])
 def search_influencers():
@@ -260,11 +282,12 @@ def search_movies():
         Movie.genre,
         Movie.release_date,
         db.func.coalesce(db.func.round(db.func.avg(Review.rating) * 2) / 2, 0).label('average_rating'),
-        Personnel.name.label('director_name')
+        Personnel.name.label('director_name'),
+        MovieImage.image_url  # 이미지 URL 추가
     ).outerjoin(Review, Movie.movie_id == Review.movie_id)\
      .outerjoin(MoviePersonnel, Movie.movie_id == MoviePersonnel.movie_id)\
      .outerjoin(Personnel, db.and_(MoviePersonnel.personnel_id == Personnel.personnel_id, Personnel.role_code == 'director'))\
-     .group_by(Movie.movie_id, Personnel.name)
+     .outerjoin(MovieImage, Movie.movie_id == MovieImage.movie_id).group_by(Movie.movie_id, Personnel.name, MovieImage.image_url)  
 
     if movie_id:
         query = query.filter(Movie.movie_id.ilike(f'%{movie_id}%'))
@@ -285,6 +308,53 @@ def search_movies():
 
 
 
+@app.route('/search_movies_pop', methods=['GET', 'POST'])
+def search_movies_pop():
+    print('영화 팝업 조회::')
+
+    movie_id = ''
+    title = ''
+    director_name = ''
+
+    if request.method == 'POST':
+        movie_id = request.form.get('search_movie_id', '')
+        title = request.form.get('search_title', '')
+        director_name = request.form.get('search_director_name', '')
+
+        print('movie_id::' + movie_id)
+        print('title::' + title)
+        print('director_name::' + director_name)
+
+    # 영화와 이미지 테이블 조인
+    query = db.session.query(
+        Movie.movie_id,
+        Movie.title,
+        Movie.genre,
+        Movie.release_date,
+        db.func.coalesce(db.func.round(db.func.avg(Review.rating) * 2) / 2, 0).label('average_rating'),
+        Personnel.name.label('director_name'),
+        MovieImage.image_url  # 이미지 URL 추가
+    ).outerjoin(Review, Movie.movie_id == Review.movie_id)\
+     .outerjoin(MoviePersonnel, Movie.movie_id == MoviePersonnel.movie_id)\
+     .outerjoin(Personnel, db.and_(MoviePersonnel.personnel_id == Personnel.personnel_id, Personnel.role_code == 'director'))\
+     .outerjoin(MovieImage, Movie.movie_id == MovieImage.movie_id).group_by(Movie.movie_id, Personnel.name, MovieImage.image_url)  
+
+    if movie_id:
+        query = query.filter(Movie.movie_id.ilike(f'%{movie_id}%'))
+    if title:
+        query = query.filter(Movie.title.ilike(f'%{title}%'))
+    if director_name:
+        query = query.filter(Personnel.name.ilike(f'%{director_name}%'))
+
+    movies = query.all()
+
+    print('query=' + str(query))
+
+    return render_template('movies_list_pop.html',
+                           movies=movies,
+                           search_movie_id=movie_id,
+                           search_title=title,
+                           search_director_name=director_name)
 
 
 
@@ -389,6 +459,49 @@ def movie_recommendations():
 
 
 
+
+@app.route('/save_recommendations', methods=['POST'])
+def save_recommendations():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    movie_plan_ids = data.get('movie_plan_ids')
+
+    print('추천 영화 movie_plan_ids='+str(movie_plan_ids))
+
+    if not user_id or not movie_plan_ids:
+        return jsonify({'message': '잘못된 요청입니다.'}), 400
+
+    # 현재 사용자의 추천 영화 삭제 (선택 사항)
+    UserPlan.query.filter_by(user_id=user_id).delete()
+
+    # 추천 영화 추가
+    for movie_id in movie_plan_ids:
+        new_recommendation = UserPlan(
+            user_id=user_id,
+            movie_id=movie_id
+           
+        )
+        db.session.add(new_recommendation)
+
+    db.session.commit()
+
+    return jsonify({'message': '추천 영화가 저장되었습니다.'})
+
+@app.route('/search_recommendations', methods=['POST'])
+def search_recommendations():
+    recommendations = UserPlan.query.all()
+    
+    if not recommendations:
+        return jsonify({'message': '추천 영화가 없습니다.'}), 404
+    
+    result = []
+    for rec in recommendations:
+        result.append({
+            'user_plan_id': rec.user_plan_id,
+            'movie_id': rec.movie_id
+        })
+    
+    return jsonify(result)
 
 
 def create_app():

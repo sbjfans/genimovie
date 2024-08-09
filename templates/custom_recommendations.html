@@ -2,6 +2,10 @@
 
 {% block content %}
 <h2>타인 맞춤 추천</h2>
+
+<!-- Add button to open movie search popup -->
+<button id="recommendationButton">추천 등록</button>
+
 <table>
     <thead>
         <tr>
@@ -13,11 +17,18 @@
     <tbody>
         {% for recommendation in recommendations %}
         <tr>
-            <td>{{ recommendation.id }}</td>
+            <td>{{ recommendation.recommendation_id }}</td>
             <td>{{ recommendation.user_id }}</td>
-            <td>{{ recommendation.recommendation }}</td>
+            <td>{{ recommendation.movie_plan_id }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+<script>
+    document.getElementById('recommendationButton').addEventListener('click', function() {
+        // Open a new popup window with the specified URL and settings
+        window.open('{{ url_for("menu.movies_list_pop") }}', 'MovieListPopup', 'width=800,height=600');
+    });
+</script>
 {% endblock %}
