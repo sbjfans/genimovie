@@ -63,3 +63,52 @@ body {
 .button-group {
     text-align: right;
 }
+
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Fixed position to stay in place */
+    z-index: 1000; /* High z-index to be on top of other content */
+    left: 0;
+    top: 0; /* Start from the top of the viewport */
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.8); /* Black background with opacity */
+    display: flex; /* Use flexbox for centering */
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    width: 80%; /* Adjust width as needed */
+    max-width: 700px; /* Adjust max-width as needed */
+    border-radius: 8px; /* Optional: round corners */
+}
+
+.close {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Optional: Add some padding for the caption */
+#caption {
+    color: #f1f1f1;
+    text-align: center;
+    padding: 10px;
+    font-size: 16px;
+}
