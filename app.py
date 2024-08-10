@@ -459,7 +459,7 @@ def movie_recommendations():
 
 
 
-
+# 영화 plan 추가 라우트
 @app.route('/save_recommendations', methods=['POST'])
 def save_recommendations():
     data = request.get_json()
@@ -504,6 +504,78 @@ def search_recommendations():
     return jsonify(result)
 
 
+
+
+# 가상 데이터 _user_reviews
+# 임의의 데이터
+users_reviews = [
+    {'user_id': 1, 'username': 'Alice'},
+    {'user_id': 2, 'username': 'Bob'},
+    {'user_id': 3, 'username': 'Charlie'}
+]
+
+movies_reviews = [
+    {'movie_id': 1, 'title': 'Inception'},
+    {'movie_id': 2, 'title': 'Titanic'},
+    {'movie_id': 3, 'title': 'Avengers: Endgame'},
+    {'movie_id': 4, 'title': 'Parasite'},
+    {'movie_id': 5, 'title': 'Joker'}
+]
+
+reviews_reviews = [
+    {'review_id': 1, 'user_id': 1, 'movie_id': 1, 'username': 'Alice', 'movie_title': 'Inception', 'review_text': 'Great movie!', 'rating': 9.0},
+    {'review_id': 2, 'user_id': 2, 'movie_id': 2, 'username': 'Bob', 'movie_title': 'Titanic', 'review_text': 'Very emotional.', 'rating': 8.5}
+]
+
+@app.route('/user_reviews')
+def user_reviews():
+    return render_template('user_reviews.html', users=users_reviews, movies=movies_reviews, reviews=reviews_reviews)
+
+@app.route('/submit_review', methods=['POST'])
+def submit_review():
+    author_name = request.form['author_name']
+    movie_title = request.form['movie_title']
+    review_text = request.form['review_text']
+    rating = request.form['rating']
+
+    # 리뷰 추가 (실제 데이터베이스 연동 필요)
+    new_review = {
+        'review_id': len(reviews_reviews) + 1,
+        'user_id': next(user['user_id'] for user in users_reviews if user['username'] == author_name),
+        'movie_id': next(movie['movie_id'] for movie in movies_reviews if movie['title'] == movie_title),
+        'username': author_name,
+        'movie_title': movie_title,
+        'review_text': review_text,
+        'rating': float(rating)
+    }
+    reviews_reviews.append(new_review)
+
+    return redirect(url_for('user_reviews'))
+
+@app.route('/update_user_review', methods=['POST'])
+def update_user_review():
+    review_id = int(request.form['review_id'])
+    review_text = request.form['review_text']
+    rating = request.form['rating']
+
+    for review in reviews_reviews:
+        if review['review_id'] == review_id:
+            review['review_text'] = review_text
+            review['rating'] = float(rating)
+            break
+
+    return redirect(url_for('user_reviews'))
+
+@app.route('/delete_user_review', methods=['POST'])
+def delete_user_review():
+    review_id = int(request.form['review_id'])
+    global reviews_reviews
+    reviews_reviews = [review for review in reviews_reviews if review['review_id'] != review_id]
+
+    return redirect(url_for('user_reviews'))
+
+
+
 def create_app():
     app.register_blueprint(menu, url_prefix='/menu')  # 블루프린트 등록
     return app
@@ -513,3 +585,5 @@ if __name__ == '__main__':
     app = create_app()
     
     app.run(debug=True)
+
+

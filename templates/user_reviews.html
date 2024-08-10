@@ -1,23 +1,428 @@
-{% extends 'main.html' %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>사용자 리뷰 관리</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+        }
 
-{% block content %}
-<h2>사용자 리뷰</h2>
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Review Title</th>
-            <th>Review Content</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for review in reviews %}
-        <tr>
-            <td>{{ review.id }}</td>
-            <td>{{ review.title }}</td>
-            <td>{{ review.content }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endblock %}
+        h2 {
+            text-align: center;
+            margin: 20px 0;
+            color: #333333;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            max-width: 1600px;
+            margin: 20px auto;
+            padding: 20px;
+            box-sizing: border-box;
+            gap: 20px;
+        }
+
+        .left-column, .right-column {
+            flex: 1;
+        }
+
+        .left-column {
+            margin-right: 20px;
+        }
+
+        .code-category-form {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 0;
+            background-color: #fff;
+            max-width: 100%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .code-category-form label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        .code-category-form input[type="text"],
+        .code-category-form input[type="number"],
+        .code-category-form textarea,
+        .code-category-form select {
+            width: calc(100% - 16px);
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 0;
+            box-sizing: border-box;
+        }
+
+        .code-category-form input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .code-category-form input[type="submit"],
+        .code-category-form button {
+            background-color: #fac637;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .code-category-form input[type="submit"]:hover,
+        .code-category-form button:hover {
+            background-color: #afb14e;
+        }
+
+        .list-container {
+            max-width: 120%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 0;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+            border-radius: 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8e3cd;
+            color: #333;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tbody tr:hover {
+            background-color: #e6e6e6;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 0;
+            width: 500px;
+            max-width: 90%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header, .modal-body, .modal-footer {
+            margin-bottom: 10px;
+        }
+
+        .modal-header {
+            font-size: 1.2em;
+            color: #333333;
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #333333;
+        }
+
+        .ranking-buttons, .rating-buttons {
+            margin-bottom: 20px;
+        }
+        
+        .ranking-buttons button, .rating-buttons button {
+            background-color: #fac637;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .ranking-buttons button:hover, .rating-buttons button:hover {
+            background-color: #afb14e;
+        }
+
+        .rating-buttons {
+            display: none; /* 기본적으로 숨김 */
+            margin-top: 10px;
+        }
+
+        .rating-buttons .active {
+            background-color: #ffca2c;
+        }
+    </style>
+</head>
+<body>
+    {% extends 'main.html' %}
+
+    {% block content %}
+    <div class="container">
+        <div class="left-column">
+            <h2>사용자 리뷰</h2>
+
+            <!-- 리뷰 작성 폼 -->
+            <form id="review_form" class="code-category-form" action="{{ url_for('submit_review') }}" method="post">
+                <div class="form-section">
+                    <label for="author_name">작성자:</label>
+                    <input type="text" id="author_name" name="author_name" placeholder="작성자를 입력하세요" list="users_list" required>
+                    <input type="hidden" id="author_id" name="user_id">
+                    <datalist id="users_list">
+                        {% for user in users %}
+                        <option value="{{ user['username'] }}" data-id="{{ user['user_id'] }}"></option>
+                        {% endfor %}
+                    </datalist>
+                </div>
+
+                <div class="form-section">
+                    <label for="movie_title">영화 제목:</label>
+                    <input type="text" id="movie_title" name="movie_title" placeholder="영화를 입력하세요" list="movies_list" required>
+                    <input type="hidden" id="movie_id" name="movie_id">
+                    <datalist id="movies_list">
+                        {% for movie in movies %}
+                        <option value="{{ movie['title'] }}" data-id="{{ movie['movie_id'] }}"></option>
+                        {% endfor %}
+                    </datalist>
+                </div>
+
+                <div class="form-section">
+                    <label for="review_text">리뷰 내용:</label>
+                    <textarea id="review_text" name="review_text" rows="5" required></textarea>
+                </div>
+
+                <div class="form-section">
+                    <label for="rating">평점:</label>
+                    <input type="number" id="rating" name="rating" min="0" max="10" step="0.1" required>
+                </div>
+
+                <div class="form-section">
+                    <button type="submit">제출</button>
+                </div>
+            </form>
+
+            <hr>
+
+            <!-- 기존 리뷰 목록 -->
+            <div class="list-container">
+                <table border="0">
+                    <thead>
+                        <tr>
+                            <th>리뷰 ID</th>
+                            <th>작성자</th>
+                            <th>영화 제목</th>
+                            <th>리뷰 내용</th>
+                            <th>평점</th>
+                            <th>수정</th>
+                            <th>삭제</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for review in reviews %}
+                        <tr>
+                            <td>{{ review['review_id'] }}</td>
+                            <td>{{ review['username'] }}</td>
+                            <td>{{ review['movie_title'] }}</td>
+                            <td>{{ review['review_text'] }}</td>
+                            <td>{{ review['rating'] }}</td>
+                            <td>
+                                <!-- 수정 버튼 -->
+                                <button class="edit-button" 
+                                        data-review-id="{{ review['review_id'] }}"
+                                        data-review-text="{{ review['review_text'] }}"
+                                        data-rating="{{ review['rating'] }}">
+                                    수정
+                                </button>
+                            </td>
+                            <td>
+                                <!-- 리뷰 삭제 폼 -->
+                                <form action="{{ url_for('delete_user_review') }}" method="post" style="display:inline;">
+                                    <input type="hidden" name="review_id" value="{{ review['review_id'] }}">
+                                    <button type="submit">삭제</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <h2>순위별 영화목록</h2>
+
+            <!-- 버튼 그룹 -->
+            <div class="ranking-buttons">
+                <button id="sort_by_rating">평점 순위</button>
+                <button id="sort_by_reviews">리뷰 최다순위</button>
+                <button id="sort_by_views">최대시청횟수</button>
+            </div>
+
+            <!-- 평점별 영화 필터링 버튼 -->
+            <div class="rating-buttons">
+                <button id="rating_1" class="rating-button">1점</button>
+                <button id="rating_2" class="rating-button">2점</button>
+                <button id="rating_3" class="rating-button">3점</button>
+                <button id="rating_4" class="rating-button">4점</button>
+                <button id="rating_5" class="rating-button">5점</button>
+            </div>
+
+            <!-- 영화 순위 테이블 -->
+            <div class="movie-rankings">
+                <table id="rankings_table" border="0">
+                    <thead>
+                        <tr>
+                            <th>순위</th>
+                            <th>영화 제목</th>
+                            <th>상영 이미지</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>인셉션</td>
+                            <td><img src="{{ url_for('static', filename='images/174.jpg') }}" alt="인셉션" width="100"></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>타이타닉</td>
+                            <td><img src="{{ url_for('static', filename='images/15.jpg') }}" alt="타이타닉" width="100"></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>어벤져스: 엔드게임</td>
+                            <td><img src="{{ url_for('static', filename='images/105.jpg') }}" alt="어벤져스: 엔드게임" width="100"></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>기생충</td>
+                            <td><img src="{{ url_for('static', filename='images/52.jpg') }}" alt="기생충" width="100"></td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>조커</td>
+                            <td><img src="{{ url_for('static', filename='images/147.jpg') }}" alt="조커" width="100"></td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 수정 모달 -->
+    <div class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>리뷰 수정</h2>
+            <form id="edit_form" action="{{ url_for('update_user_review') }}" method="post">
+                <input type="hidden" id="edit_review_id" name="review_id">
+                <div class="form-section">
+                    <label for="edit_review_text">리뷰 내용:</label>
+                    <textarea id="edit_review_text" name="review_text" rows="5" required></textarea>
+                </div>
+                <div class="form-section">
+                    <label for="edit_rating">평점:</label>
+                    <input type="number" id="edit_rating" name="rating" min="0" max="10" step="0.1" required>
+                </div>
+                <div class="form-section">
+                    <button type="submit">수정 완료</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sortByRatingButton = document.getElementById('sort_by_rating');
+            const ratingButtons = document.querySelector('.rating-buttons');
+
+            sortByRatingButton.addEventListener('click', function() {
+                ratingButtons.style.display = ratingButtons.style.display === 'block' ? 'none' : 'block';
+            });
+
+            document.querySelectorAll('.rating-buttons .rating-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const rating = this.id.split('_')[1];
+                    alert(
+
+```
+필터링할 평점: ${rating}점
+```
+
+);
+                    // 여기에 실제 필터링 기능을 추가해야 함
+                });
+            });
+
+            const editButtons = document.querySelectorAll('.edit-button');
+            editButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const reviewId = this.dataset.reviewId;
+                    const reviewText = this.dataset.reviewText;
+                    const rating = this.dataset.rating;
+
+                    document.getElementById('edit_review_id').value = reviewId;
+                    document.getElementById('edit_review_text').value = reviewText;
+                    document.getElementById('edit_rating').value = rating;
+
+                    document.querySelector('.modal').style.display = 'flex';
+                });
+            });
+
+            document.querySelector('.modal-close').addEventListener('click', function() {
+                document.querySelector('.modal').style.display = 'none';
+            });
+
+            window.addEventListener('click', function(event) {
+                if (event.target.classList.contains('modal')) {
+                    document.querySelector('.modal').style.display = 'none';
+                }
+            });
+        });
+    </script>
+
+    {% endblock %}
+</body>
+</html>
